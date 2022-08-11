@@ -52,36 +52,13 @@
 #include "meta/meta_state_service_utils.h"
 #include "meta/partition_guardian.h"
 #include "meta_bulk_load_service.h"
-#include "meta_service.h"
-#include "meta_split_service.h"
-#include "partition_split_types.h"
-#include "ranger/ranger_resource_policy_manager.h"
-#include "remote_cmd/remote_command.h"
-#include "runtime/rpc/rpc_address.h"
-#include "runtime/rpc/rpc_holder.h"
-#include "runtime/task/async_calls.h"
-#include "server_load_balancer.h"
-#include "server_state.h"
-#include "utils/autoref_ptr.h"
-#include "utils/command_manager.h"
-#include "utils/factory_store.h"
-#include "utils/filesystem.h"
-#include "utils/flags.h"
-#include "utils/fmt_logging.h"
-#include "utils/strings.h"
+#include "runtime/security/access_controller.h"
+#include "meta_backup_service.h"
 
-DSN_DECLARE_string(hosts_list);
-DSN_DEFINE_bool(meta_server,
-                recover_from_replica_server,
-                false,
-                "Whether to recover tables from replica servers when there is no "
-                "data of the tables in remote storage");
-DSN_DEFINE_bool(meta_server, cold_backup_disabled, true, "whether to disable cold backup");
-DSN_DEFINE_bool(meta_server,
-                enable_white_list,
-                false,
-                "whether to enable white list of replica servers");
-DSN_DEFINE_uint64(meta_server,
+namespace dsn {
+namespace replication {
+
+DSN_DEFINE_uint64("meta_server",
                   min_live_node_count_for_unfreeze,
                   3,
                   "If the number of ALIVE nodes is less than this threshold, MetaServer will "

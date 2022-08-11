@@ -178,4 +178,17 @@ USER_DEFINED_ENUM_FORMATTER(manual_compaction_status::type)
 USER_DEFINED_ENUM_FORMATTER(meta_function_level::type)
 USER_DEFINED_ENUM_FORMATTER(partition_status::type)
 } // namespace replication
+
+ENUM_BEGIN2(replication::backup_status::type,
+            backup_status,
+            replication::backup_status::UNINITIALIZED)
+ENUM_REG(replication::backup_status::UNINITIALIZED)
+ENUM_REG(replication::backup_status::CHECKPOINTING)
+ENUM_REG(replication::backup_status::CHECKPOINTED)
+ENUM_REG(replication::backup_status::UPLOADING)
+ENUM_REG(replication::backup_status::SUCCEED)
+ENUM_REG(replication::backup_status::FAILED)
+ENUM_REG(replication::backup_status::CANCELED)
+ENUM_END2(replication::backup_status::type, backup_status)
+
 } // namespace dsn

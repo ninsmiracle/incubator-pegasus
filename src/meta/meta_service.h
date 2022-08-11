@@ -44,26 +44,10 @@
 #include "common/replication_common.h"
 #include "meta_admin_types.h"
 #include "meta_options.h"
-#include "meta_rpc_types.h"
-#include "meta_server_failure_detector.h"
-#include "runtime/api_layer1.h"
-#include "runtime/rpc/dns_resolver.h"
-#include "runtime/rpc/network.h"
-#include "runtime/rpc/rpc_host_port.h"
-#include "runtime/rpc/rpc_message.h"
-#include "runtime/rpc/serialization.h"
-#include "security/access_controller.h"
-#include "runtime/serverlet.h"
-#include "runtime/task/task.h"
-#include "runtime/task/task_code.h"
-#include "runtime/task/task_tracker.h"
-#include "utils/autoref_ptr.h"
-#include "utils/enum_helper.h"
-#include "utils/error_code.h"
-#include "utils/fmt_logging.h"
-#include "utils/metrics.h"
-#include "utils/threadpool_code.h"
-#include "utils/zlocks.h"
+#include "meta_state_service_utils.h"
+#include "block_service/block_service_manager.h"
+#include "partition_guardian.h"
+
 
 namespace dsn {
 class command_deregister;
@@ -80,13 +64,8 @@ class backup_service;
 class bulk_load_service;
 class meta_duplication_service;
 class meta_split_service;
-class partition_guardian;
-class server_load_balancer;
-class server_state;
-
-namespace mss {
-struct meta_storage;
-} // namespace mss
+class bulk_load_service;
+class backup_service;
 
 namespace test {
 class test_checker;

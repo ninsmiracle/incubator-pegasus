@@ -19,6 +19,14 @@
 
 #include <string>
 
+
+#include <dsn/dist/block_service.h>
+#include <dsn/http/http_server.h>
+#include <dsn/perf_counter/perf_counter_wrapper.h>
+#include <gtest/gtest_prod.h>
+
+#include "meta_backup_engine.h"
+#include "meta_data.h"
 #include "meta_rpc_types.h"
 
 namespace dsn {
