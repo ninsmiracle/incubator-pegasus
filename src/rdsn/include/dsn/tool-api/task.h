@@ -90,12 +90,16 @@ extern __thread struct __tls_dsn__ tls_dsn;
 ///
 /// When creating the task, user must use 3 parameters to specify in which thread the
 /// callback should run:
-///
+///     node：指定回调的计算引擎，即“thread_pool”的“pool”
 ///     1. node: specifies the computation engine of the callback, i.e, the "pool" of "thread_pool"
+///
+///     task_spec的索引。 task_spec 指定计算引擎的哪个线程池运行回调.ask_spec 中还记录了一些其他的任务信息
 ///     2. task_code: a index to the "task_spec". task_spec specifies which thread pool of
 ///        the computation engine to run the callback. some other task information is also
 ///        recorded in task_spec. please refer to @task_code, @task_spec, @thread_pool_code
 ///        for more details.
+///
+///        表明线程池中哪个线程执行回调
 ///     3. hash: specifies which thread in the thread pool to execute the callback. (This is
 ///        somewhat not accurate, coz "hash" will work together with thread_pool's "partition"
 ///        option. Please refer to @task_worker_pool for more details).

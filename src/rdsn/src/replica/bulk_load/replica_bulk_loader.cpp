@@ -85,7 +85,7 @@ void replica_bulk_loader::on_bulk_load(const bulk_load_request &request,
     if (response.err != ERR_OK) {
         return;
     }
-
+    ///在这里就发出group bulk load request通知secondary下载
     broadcast_group_bulk_load(request);
 }
 
@@ -108,6 +108,7 @@ void replica_bulk_loader::broadcast_group_bulk_load(const bulk_load_request &met
 
     ddebug_replica("start to broadcast group bulk load");
 
+    ///primary拥有的全部secondaries
     for (const auto &addr : _replica->_primary_states.membership.secondaries) {
         if (addr == _stub->_primary_address)
             continue;
@@ -186,6 +187,7 @@ void replica_bulk_loader::on_group_bulk_load(const group_bulk_load_request &requ
     report_bulk_load_states_to_primary(request.meta_bulk_load_status, response);
 }
 
+///这里还是在运行在primary primary用来处理sec的reply
 // ThreadPool: THREAD_POOL_REPLICATION
 void replica_bulk_loader::on_group_bulk_load_reply(error_code err,
                                                    const group_bulk_load_request &req,
@@ -201,7 +203,6 @@ void replica_bulk_loader::on_group_bulk_load_reply(error_code err,
     }
 
     _replica->_primary_states.group_bulk_load_pending_replies.erase(req.target_address);
-
     if (err != ERR_OK) {
         derror_replica("failed to receive group_bulk_load_reply from {}, error = {}",
                        req.target_address.to_string(),
@@ -227,7 +228,7 @@ void replica_bulk_loader::on_group_bulk_load_reply(error_code err,
         _replica->_primary_states.reset_node_bulk_load_states(req.target_address);
         return;
     }
-
+    ///接收到的response被判定为有效，resp是secondires发来的，上报了下载状态和进度给primary  里面包括了download progress
     _replica->_primary_states.secondary_bulk_load_states[req.target_address] = resp.bulk_load_state;
 }
 
@@ -295,6 +296,7 @@ error_code replica_bulk_loader::do_bulk_load(const std::string &app_name,
     return ec;
 }
 
+///排除掉一些显然出错了的状态情况
 /*static*/ error_code
 replica_bulk_loader::validate_status(const bulk_load_status::type meta_status,
                                      const bulk_load_status::type local_status)
@@ -360,6 +362,7 @@ error_code replica_bulk_loader::start_download(const std::string &remote_dir,
 
     // reset local bulk load context and state
     if (_status == bulk_load_status::BLS_INVALID) {
+        ///guess:这里是否和之前生成sst错误的bug有联系？
         // try to remove possible garbage bulk load data when actually starting bulk load
         remove_local_bulk_load_dir(utils::filesystem::path_combine(
             _replica->_dir, bulk_load_constant::BULK_LOAD_LOCAL_ROOT_DIR));
@@ -458,7 +461,9 @@ void replica_bulk_loader::download_sst_file(const std::string &remote_dir,
     error_code ec = _stub->_block_service_manager.download_file(
         remote_dir, local_dir, f_meta.name, fs, f_size, f_md5);
     const std::string &file_name = utils::filesystem::path_combine(local_dir, f_meta.name);
+
     bool verified = false;
+    ///可能replica本地会缓存文件，如果检测到文件名存在，则校验文件大小
     if (ec == ERR_PATH_ALREADY_EXIST) {
         // We are not sure if the file was cached by system. And we couldn't
         // afford the io overhead which is cased by reading file in verify_file(),
@@ -501,11 +506,14 @@ void replica_bulk_loader::download_sst_file(const std::string &remote_dir,
         return;
     }
     // download file succeed, update progress
+    ///更新整个part的下载进度  需要将已下载量除节点数
     update_bulk_load_download_progress(f_size, f_meta.name);
+    ///更新replica的bulkload相关计数器  属于类replica_stub
     _stub->_counter_bulk_load_download_file_succ_count->increment();
     _stub->_counter_bulk_load_download_file_size->add(f_size);
 
     // download next file
+    ///还是当前partition，下载对象变成了下一个sst文件
     if (file_index + 1 < _metadata.files.size()) {
         const file_meta &f_meta = _metadata.files[file_index + 1];
         _download_files_task[f_meta.name] =
@@ -531,6 +539,7 @@ error_code replica_bulk_loader::parse_bulk_load_metadata(const std::string &fnam
         return ec;
     }
 
+    ///BLOB stands for a “Binary Large Object,” a data type that stores binary data
     blob bb = blob::create_from_bytes(std::move(buf));
     if (!json::json_forwarder<bulk_load_metadata>::decode(bb, _metadata)) {
         derror_replica("file({}) is damaged", fname);
@@ -566,6 +575,7 @@ void replica_bulk_loader::update_bulk_load_download_progress(uint64_t file_size,
         auto total_size = static_cast<double>(_metadata.file_total_size);
         auto cur_downloaded_size = static_cast<double>(_cur_downloaded_size.load());
         auto cur_progress = static_cast<int32_t>((cur_downloaded_size / total_size) * 100);
+        ///原子操作赋值
         _download_progress.store(cur_progress);
         ddebug_replica("total_size = {}, cur_downloaded_size = {}, progress = {}",
                        total_size,
@@ -637,6 +647,8 @@ void replica_bulk_loader::check_ingestion_finish()
     }
 }
 
+///meta状态是success，replica是BLS_DOWNLOADED或BLS_INGESTING
+/// ???看上去是为learn做的操作，暂不理解
 // ThreadPool: THREAD_POOL_REPLICATION
 void replica_bulk_loader::handle_bulk_load_succeed()
 {
@@ -655,6 +667,7 @@ void replica_bulk_loader::handle_bulk_load_succeed()
     }
 }
 
+///meta状态是success,replica是BLS_INVALID或BLS_SUCCEED
 // ThreadPool: THREAD_POOL_REPLICATION
 void replica_bulk_loader::handle_bulk_load_finish(bulk_load_status::type new_status)
 {
@@ -662,7 +675,7 @@ void replica_bulk_loader::handle_bulk_load_finish(bulk_load_status::type new_sta
         ddebug_replica("bulk load states have been cleaned up");
         return;
     }
-
+    ///如果当前是primary，则把其拥有的secondary的状态改成完成
     if (status() == partition_status::PS_PRIMARY) {
         for (const auto &target_address : _replica->_primary_states.membership.secondaries) {
             _replica->_primary_states.reset_node_bulk_load_states(target_address);
@@ -845,6 +858,7 @@ void replica_bulk_loader::report_group_download_progress(/*out*/ bulk_load_respo
         return;
     }
 
+    ///只有primary执行逻辑
     partition_bulk_load_state primary_state;
     {
         zauto_read_lock l(_lock);
@@ -873,6 +887,7 @@ void replica_bulk_loader::report_group_download_progress(/*out*/ bulk_load_respo
         total_progress += s_progress;
     }
 
+    //todo: 在这里上报多一个bulkload_cu_downloaded_size
     total_progress /= _replica->_primary_states.membership.max_replica_count;
     ddebug_replica("total download progress = {}%", total_progress);
     response.__set_total_download_progress(total_progress);

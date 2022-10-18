@@ -116,6 +116,7 @@ public:
     virtual double get_value()
     {
         double val = 0;
+        ///std::atomic -- 如果某个操作只要求是原子操作，除此之外，不需要其它同步的保障，就可以使用 Relaxed ordering。程序计数器是一种典型的应用场景
         for (int i = 0; i < DIVIDE_CONTAINER; i++) {
             val += static_cast<double>(_val[i].exchange(0, std::memory_order_relaxed));
         }
@@ -152,6 +153,7 @@ public:
 
     virtual void increment()
     {
+        ///分线程ID的原子变动
         uint64_t task_id = static_cast<int>(utils::get_current_tid());
         _val[task_id % DIVIDE_CONTAINER].fetch_add(1, std::memory_order_relaxed);
     }

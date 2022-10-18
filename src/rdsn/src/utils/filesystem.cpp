@@ -397,7 +397,7 @@ bool file_size(const std::string &path, int64_t &sz)
     if (err != 0) {
         return false;
     }
-
+    ///统计内部
     err = dsn::utils::filesystem::get_stat_internal(npath, st);
     if (err != 0) {
         return false;

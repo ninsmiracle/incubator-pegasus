@@ -87,7 +87,7 @@ void replica_split_manager::parent_start_split(
 
     tasking::enqueue(LPC_CREATE_CHILD,
                      tracker(),
-                     std::bind(&replica_stub::create_child_replica,
+                     std::bind(&replica_stub::,
                                _stub,
                                _replica->_config.primary,
                                _replica->_app_info,

@@ -532,7 +532,7 @@ public:
 // parent_start_split tests
 TEST_F(replica_split_test, parent_start_split_tests)
 {
-    fail::cfg("replica_stub_create_child_replica_if_not_found", "return()");
+    fail::cfg("replica_stub__if_not_found", "return()");
     fail::cfg("replica_child_init_replica", "return()");
 
     ballot WRONG_BALLOT = 2;

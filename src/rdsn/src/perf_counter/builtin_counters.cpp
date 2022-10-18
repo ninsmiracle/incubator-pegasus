@@ -41,6 +41,7 @@ void builtin_counters::update_counters()
 {
     double vm_usage;
     double resident_set;
+    ///读取底层文件/proc/self/stat
     utils::process_mem_usage(vm_usage, resident_set);
     uint64_t memused_virt = (uint64_t)vm_usage / 1024;
     uint64_t memused_res = (uint64_t)resident_set / 1024;

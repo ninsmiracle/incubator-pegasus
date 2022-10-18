@@ -224,6 +224,7 @@ void bulk_load_service::do_start_app_bulk_load(std::shared_ptr<app_state> app,
     app_info info = *app;
     info.__set_is_bulk_loading(true);
 
+    ///转成json  为了满足thrift的数据结构要求
     blob value = dsn::json::json_forwarder<app_info>::encode(info);
     _meta_svc->get_meta_storage()->set_data(
         _state->get_app_path(*app), std::move(value), [app, rpc, this]() {
@@ -232,10 +233,12 @@ void bulk_load_service::do_start_app_bulk_load(std::shared_ptr<app_state> app,
                 app->is_bulk_loading = true;
             }
             {
+                ///正在做bulk load的表，一些状态更新
                 zauto_write_lock l(_lock);
                 _bulk_load_app_id.insert(app->app_id);
                 _apps_in_progress_count[app->app_id] = app->partition_count;
             }
+            ///在zk上创建表的bulk load路径，创建每个partition的路径
             create_app_bulk_load_dir(
                 app->app_name, app->app_id, app->partition_count, std::move(rpc));
         });
@@ -261,6 +264,7 @@ void bulk_load_service::create_app_bulk_load_dir(const std::string &app_name,
     ainfo.is_ever_ingesting = false;
     ainfo.bulk_load_err = ERR_OK;
 
+    ///递归的删除节点
     _meta_svc->get_meta_storage()->delete_node_recursively(
         get_app_bulk_load_path(app_id), [this, rpc, ainfo]() {
             std::string bulk_load_path = get_app_bulk_load_path(ainfo.app_id);
@@ -287,7 +291,7 @@ void bulk_load_service::create_app_bulk_load_dir(const std::string &app_name,
 }
 
 // ThreadPool: THREAD_POOL_META_STATE
-void bulk_load_service::create_partition_bulk_load_dir(const std::string &app_name,
+void bulk_load_service:: create_partition_bulk_load_dir(const std::string &app_name,
                                                        const gpid &pid,
                                                        int32_t partition_count,
                                                        start_bulk_load_rpc rpc)
@@ -429,7 +433,7 @@ void bulk_load_service::on_partition_bulk_load_reply(error_code err,
     const std::string &app_name = request.app_name;
     const gpid &pid = request.pid;
     const rpc_address &primary_addr = request.primary_addr;
-
+    ///可能是网路没连上
     if (err != ERR_OK) {
         derror_f(
             "app({}), partition({}) failed to receive bulk load response from node({}), error = {}",
@@ -485,6 +489,7 @@ void bulk_load_service::on_partition_bulk_load_reply(error_code err,
         handle_app_unavailable(pid.get_app_id(), app_name);
         return;
     }
+    ///选票相关
     ballot current_ballot = app->partitions[pid.get_partition_index()].ballot;
     if (request.ballot < current_ballot) {
         dwarn_f("receive out-date response from node({}), app({}), partition({}), request ballot = "
@@ -499,6 +504,7 @@ void bulk_load_service::on_partition_bulk_load_reply(error_code err,
         return;
     }
 
+    ///真实下载/ingestion
     // handle bulk load states reported from primary replica
     bulk_load_status::type app_status = get_app_bulk_load_status(response.pid.get_app_id());
     switch (app_status) {
@@ -563,7 +569,7 @@ void bulk_load_service::handle_app_downloading(const bulk_load_response &respons
             dsn::enum_to_string(response.primary_bulk_load_status));
         return;
     }
-
+    /// 遍历 rpc address，取 bulk load状态做状态判断
     for (const auto &kv : response.group_bulk_load_state) {
         const auto &bulk_load_states = kv.second;
         if (!bulk_load_states.__isset.download_progress ||
@@ -891,6 +897,7 @@ void bulk_load_service::update_partition_metadata_on_remote_storage(
     pinfo.metadata = metadata;
     blob value = json::json_forwarder<partition_bulk_load_info>::encode(pinfo);
 
+    ///下载最新的bulk_load_meta data文件
     _meta_svc->get_meta_storage()->set_data(
         get_partition_bulk_load_path(pid), std::move(value), [this, app_name, pid, pinfo]() {
             zauto_write_lock l(_lock);
@@ -1212,6 +1219,7 @@ void bulk_load_service::partition_ingestion(const std::string &app_name, const g
     }
 
     auto app = get_app(pid.get_app_id());
+    ///状态检查，不符合则打包进任务丢进线程池重试
     if (!try_partition_ingestion(pconfig, app->helpers->contexts[pid.get_partition_index()])) {
         dwarn_f(
             "app({}) partition({}) couldn't execute ingestion, wait and try later", app_name, pid);
@@ -1225,6 +1233,7 @@ void bulk_load_service::partition_ingestion(const std::string &app_name, const g
 
     rpc_address primary_addr = pconfig.primary;
     ballot meta_ballot = pconfig.ballot;
+    ///和download阶段相同的bulk load相关request，meta发送给某一个partition的primary
     tasking::enqueue(LPC_BULK_LOAD_INGESTION,
                      _meta_svc->tracker(),
                      std::bind(&bulk_load_service::send_ingestion_request,
@@ -1266,6 +1275,7 @@ void bulk_load_service::send_ingestion_request(const std::string &app_name,
         [this, app_name, pid, primary_addr](error_code err, ingestion_response &&resp) {
             on_partition_ingestion_reply(err, std::move(resp), app_name, pid, primary_addr);
         });
+    ///发送ingest请求包  ？？primary回复后，meta开始执行rpc_callback的内容
     _meta_svc->send_request(msg, primary_addr, rpc_callback);
     ddebug_f("send ingest_request to node({}), app({}) partition({})",
              primary_addr.to_string(),

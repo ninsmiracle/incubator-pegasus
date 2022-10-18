@@ -104,6 +104,7 @@ perf_counters::~perf_counters()
     UNREGISTER_VALID_HANDLER(_perf_counters_by_postfix_cmd);
 }
 
+///获取app的global_counter
 perf_counter_ptr perf_counters::get_app_counter(const char *section,
                                                 const char *name,
                                                 dsn_perf_counter_type_t flags,
@@ -123,12 +124,15 @@ perf_counter_ptr perf_counters::get_global_counter(const char *app,
                                                    bool create_if_not_exist)
 {
     std::string full_name;
+    ///full name 格式 app*section*name;
     perf_counter::build_full_name(app, section, name, full_name);
 
     utils::auto_write_lock l(_lock);
     if (create_if_not_exist) {
         auto it = _counters.find(full_name);
+        /// _counter中没有相同full_name的计数器
         if (it == _counters.end()) {
+            ///指定的4种类型计数器才可以被创建
             perf_counter_ptr counter = new_counter(app, section, name, flags, dsptr);
             _counters.emplace(full_name, counter_object{counter, 1});
             return counter;
@@ -138,11 +142,13 @@ perf_counter_ptr perf_counters::get_global_counter(const char *app,
                     full_name.c_str(),
                     it->second.counter->type(),
                     flags);
+            ///增加该计数器的refer计数
             ++it->second.user_reference;
             return it->second.counter;
         }
     } else {
         auto it = _counters.find(full_name);
+        ///如果创建标志位是false，返回空指针
         if (it == _counters.end())
             return nullptr;
         else {
@@ -207,6 +213,7 @@ void perf_counters::get_all_counters(std::vector<perf_counter_ptr> *all) const
 {
     all->clear();
     utils::auto_read_lock l(_lock);
+    ///vector容量指定
     all->reserve(_counters.size());
     for (auto &p : _counters) {
         all->push_back(p.second.counter);
@@ -265,7 +272,7 @@ std::string perf_counters::list_snapshot_by_literal(
     std::function<bool(const std::string &arg, const counter_snapshot &cs)> filter) const
 {
     perf_counter_info info;
-
+    ///快照中字段是否匹配了传入的关键字参数 如cs.name需要匹配"cu@"
     snapshot_iterator visitor = [&args, &info, &filter](const counter_snapshot &cs) {
         bool matched = false;
         if (args.empty()) {
@@ -283,6 +290,7 @@ std::string perf_counters::list_snapshot_by_literal(
             info.counters.emplace_back(cs.name.c_str(), cs.type, cs.value);
         }
     };
+    ///visitor充当谓词，作用在每一个counter_snapshot上
     iterate_snapshot(visitor);
     info.result = "OK";
 
@@ -297,6 +305,7 @@ std::string perf_counters::list_snapshot_by_literal(
 
 void perf_counters::take_snapshot()
 {
+    ///更新两个特殊的计数器
     builtin_counters::instance().update_counters();
 
     std::vector<perf_counter_ptr> all_counters;
@@ -308,15 +317,18 @@ void perf_counters::take_snapshot()
     }
 
     // updated counters from current value
+    ///通过最新的counter数据，来更新_snapshots里面的cs
     for (const perf_counter_ptr &c : all_counters) {
         counter_snapshot &cs = _snapshots[c->full_name()];
         if (cs.name.empty()) {
             // recently created counter, which wasn't in snapshot before
+            ///没有则说明是新的counter，给他补全cs信息
             cs.name = c->full_name();
             cs.type = c->type();
         }
         cs.updated_recently = true;
         if (c->type() != COUNTER_TYPE_NUMBER_PERCENTILES) {
+            ///perf_counter_atomic.h 中会根据类型不同展示多态，如果是volatile_number则会通过exchange(0)清零
             cs.value = c->get_value();
         } else {
             cs.value = c->get_percentile(COUNTER_PERCENTILE_99);
@@ -335,6 +347,7 @@ void perf_counters::take_snapshot()
 
     // delete old counters
     std::vector<std::string> old_counters;
+    ///把最近没更新过得节点删除出_snapshots
     for (auto &p : _snapshots)
         if (!p.second.updated_recently)
             old_counters.push_back(p.first);

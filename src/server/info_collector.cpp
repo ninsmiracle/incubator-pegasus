@@ -67,6 +67,7 @@ info_collector::info_collector()
                                                                        10, // default value 10s
                                                                        "app stat interval seconds");
 
+    ///去配置文件里面读取stat要存放在哪个表内
     _usage_stat_app = dsn_config_get_value_string(
         "pegasus.collector", "usage_stat_app", "", "app for recording usage statistics");
     dassert(!_usage_stat_app.empty(), "");
@@ -74,6 +75,7 @@ info_collector::info_collector()
     if (!pegasus_client_factory::initialize(nullptr)) {
         dassert(false, "Initialize the pegasus client failed");
     }
+    ///伪造客户端
     _client = pegasus_client_factory::get_client(_cluster_name.c_str(), _usage_stat_app.c_str());
     dassert(_client != nullptr, "Initialize the client failed");
     _result_writer = dsn::make_unique<result_writer>(_client);
@@ -257,7 +259,8 @@ info_collector::app_stat_counters *info_collector::get_app_counters(const std::s
     return counters;
 }
 
-void info_collector::on_capacity_unit_stat(int remaining_retry_count)
+void info_collector::
+    on_capacity_unit_stat(int remaining_retry_count)
 {
     ddebug("start to stat capacity unit, remaining_retry_count = %d", remaining_retry_count);
     std::vector<node_capacity_unit_stat> nodes_stat;
@@ -277,6 +280,7 @@ void info_collector::on_capacity_unit_stat(int remaining_retry_count)
         }
         return;
     }
+    ///把每个replica的cu数据都存入stat
     for (node_capacity_unit_stat &elem : nodes_stat) {
         if (elem.node_address.empty() || elem.timestamp.empty() ||
             !has_capacity_unit_updated(elem.node_address, elem.timestamp)) {

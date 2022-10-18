@@ -41,7 +41,7 @@ capacity_unit_calculator::capacity_unit_calculator(
     dassert(_write_hotkey_collector != nullptr, "write hotkey collector is a nullptr");
     dassert(_read_size_throttling_controller != nullptr,
             "_read_size_throttling_controller is a nullptr");
-
+    ///读写cu的单位大小设置 从配置文件中读取
     _read_capacity_unit_size =
         dsn_config_get_value_uint64("pegasus.server",
                                     "perf_counter_read_capacity_unit_size",

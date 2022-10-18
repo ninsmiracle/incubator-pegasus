@@ -634,6 +634,7 @@ call_remote_command(shell_context *sc,
     std::vector<dsn::task_ptr> tasks;
     tasks.resize(nodes.size());
     results.resize(nodes.size());
+    ///这里的callback也是去call完replica之后meta自己的处理
     for (int i = 0; i < nodes.size(); ++i) {
         auto callback = [&results, i](::dsn::error_code err, const std::string &resp) {
             if (err == ::dsn::ERR_OK) {
@@ -658,9 +659,11 @@ inline bool parse_app_pegasus_perf_counter_name(const std::string &name,
                                                 int32_t &partition_index,
                                                 std::string &counter_name)
 {
+    ///倒推出格式类似   counter_name.*@appid.partition_index
     std::string::size_type find = name.find_last_of('@');
     if (find == std::string::npos)
         return false;
+    ///把字符串分开
     int n = sscanf(name.c_str() + find + 1, "%d.%d", &app_id, &partition_index);
     if (n != 2)
         return false;
@@ -1066,6 +1069,7 @@ inline bool get_app_partition_stat(shell_context *sc,
         return false;
     }
 
+    ///获取数据的方式基本上都是call_remote_command 即call replica的地址获取resp
     // get all of the perf counters with format ".*@.*"
     std::vector<std::pair<bool, std::string>> results =
         call_remote_command(sc, nodes, "perf-counters", {".*@.*"});
@@ -1249,11 +1253,13 @@ inline bool get_capacity_unit_stat(shell_context *sc,
                                    std::vector<node_capacity_unit_stat> &nodes_stat)
 {
     std::vector<node_desc> nodes;
+    ///所有健康的replica列出来
     if (!fill_nodes(sc, "replica-server", nodes)) {
         derror("get replica server node list failed");
         return false;
     }
-
+    ///call replica，如果能访问保存response，不能访问则保存错误码，vector的排序和上面的nodes相同
+    ///返回那些cu变量
     std::vector<std::pair<bool, std::string>> results =
         call_remote_command(sc, nodes, "perf-counters-by-substr", {".cu@"});
 
@@ -1266,13 +1272,16 @@ inline bool get_capacity_unit_stat(shell_context *sc,
                   node_addr.to_string());
             continue;
         }
+        ///把编码完成的用量info信息存入当前replica的node_capacity_unit_stat结构体
         nodes_stat[i].timestamp = info.timestamp_str;
         nodes_stat[i].node_address = node_addr.to_string();
+        ///info.counters是replica传过来的
         for (dsn::perf_counter_metric &m : info.counters) {
             int32_t app_id, pidx;
             std::string counter_name;
             bool r = parse_app_pegasus_perf_counter_name(m.name, app_id, pidx, counter_name);
             dassert(r, "name = %s", m.name.c_str());
+            ///汇总了同一个app的不同partition的读写用量
             if (counter_name == "recent.read.cu") {
                 nodes_stat[i].cu_value_by_app[app_id].first += (int64_t)m.value;
             } else if (counter_name == "recent.write.cu") {

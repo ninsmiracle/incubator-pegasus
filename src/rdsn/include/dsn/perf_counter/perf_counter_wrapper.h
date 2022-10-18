@@ -84,6 +84,7 @@ public:
     {
         dsn::perf_counter_ptr c =
             dsn::perf_counters::instance().get_app_counter(section, name, type, dsptr, true);
+        ///counter对象的refer计数为0时，从counter中删除
         clear();
         _counter = c.get();
     }

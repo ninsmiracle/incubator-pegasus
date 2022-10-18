@@ -191,13 +191,14 @@ void pegasus_counter_reporter::update()
 {
     uint64_t now = dsn_now_ms();
     int64_t timestamp = now / 1000;
-
+    ///cs的数据被更新了
     perf_counters::instance().take_snapshot();
 
     if (FLAGS_perf_counter_enable_logging) {
         std::stringstream oss;
         oss << "logging perf counter(name, type, value):" << std::endl;
         oss << std::fixed << std::setprecision(2);
+
         perf_counters::instance().iterate_snapshot(
             [&oss](const dsn::perf_counters::counter_snapshot &cs) {
                 oss << "[" << cs.name << ", " << dsn_counter_type_to_string(cs.type) << ", "

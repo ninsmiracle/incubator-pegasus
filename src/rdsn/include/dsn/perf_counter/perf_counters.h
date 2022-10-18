@@ -75,6 +75,7 @@ public:
 
     struct counter_snapshot
     {
+        ///c++11的初始化
         double value{0.0};
         std::string name;
         dsn_perf_counter_type_t type;

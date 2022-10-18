@@ -1,0 +1,2 @@
+#pragma once
+#define PEGASUS_GIT_COMMIT "e5fbe327374307ea6618937108dfc6387f9231f9"
