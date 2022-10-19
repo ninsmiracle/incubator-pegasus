@@ -1062,6 +1062,13 @@ void bulk_load_service::update_app_status_on_remote_storage_unlocked(
         return;
     }
 
+    //finish downloading just now,
+    if (old_status != new_status && new_status == bulk_load_status::BLS_DOWNLOADED){
+        _app_total_download_file_size = 
+    }
+
+
+
     if (_apps_pending_sync_flag[app_id]) {
         ddebug_f("app({}) has already sync bulk load status, wait and retry, current status = {}, "
                  "new status = {}",
@@ -1393,6 +1400,17 @@ inline void erase_map_elem_by_id(int32_t app_id, std::unordered_map<gpid, T> &my
         }
     }
 }
+
+inline uint_32 sum_map_number( std::unordered_map<gpid, uint_32> &mymap)
+{   
+    uint_32 result = 0;
+    for (auto iter = mymap.begin(); iter != mymap.end();iter++) {
+        
+    }
+}
+
+
+
 
 // ThreadPool: THREAD_POOL_META_STATE
 void bulk_load_service::reset_local_bulk_load_states_unlocked(int32_t app_id,
