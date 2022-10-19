@@ -124,7 +124,7 @@ public:
     {
         mock_group_progress(status, p_progress, s1_progress, s2_progress);
         bulk_load_response response;
-        _bulk_loader->report_group_download_progress(response);
+        _bulk_loader->report_group_download_progress(response,status);
         return response.total_download_progress;
     }
 

@@ -610,6 +610,7 @@ void bulk_load_service::handle_app_downloading(const bulk_load_response &respons
 
     // update download progress
     int32_t total_progress = response.total_download_progress;
+    int32_t partition_total_file_size = response.total_downloaded_file_size;
     ddebug_f("receive bulk load response from node({}) app({}) partition({}), primary_status({}), "
              "total_download_progress = {}",
              primary_addr.to_string(),
@@ -621,6 +622,7 @@ void bulk_load_service::handle_app_downloading(const bulk_load_response &respons
         zauto_write_lock l(_lock);
         _partitions_total_download_progress[pid] = total_progress;
         _partitions_bulk_load_state[pid] = response.group_bulk_load_state;
+        _partitions_total_downloaded_file_size[pid] = partition_total_file_size;
     }
 
     // update partition status to `downloaded` if all replica downloaded
