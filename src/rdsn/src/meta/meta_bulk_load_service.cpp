@@ -18,8 +18,12 @@
 #include <dsn/dist/fmt_logging.h>
 #include <dsn/dist/replication/replica_envs.h>
 #include <dsn/utility/fail_point.h>
+#include <dsn/dist/common.h>
 
 #include "meta_bulk_load_service.h"
+#include "../client_lib/pegasus_client_factory_impl.h"
+#include "../client_lib/pegasus_client_impl.h"
+
 
 namespace dsn {
 namespace replication {
@@ -58,8 +62,10 @@ void bulk_load_service::initialize_bulk_load_service()
         make_unique<mss::meta_storage>(_meta_svc->get_remote_storage(), &_sync_tracker);
     _ingestion_context = make_unique<ingestion_context>();
 
+    initialize_bulk_load_cu_writer();
     create_bulk_load_root_dir();
     _sync_tracker.wait_outstanding_tasks();
+
 
     try_to_continue_bulk_load();
 }
@@ -688,6 +694,11 @@ void bulk_load_service::handle_app_ingestion(const bulk_load_response &response,
 
     if (response.is_group_ingestion_finished) {
         ddebug_f("app({}) partition({}) ingestion files succeed", app_name, pid);
+        //todo: 在这里写入stat表，按分片来
+
+
+
+
         finish_ingestion(pid);
         update_partition_info_on_remote_storage(app_name, pid, bulk_load_status::BLS_SUCCEED);
     }
@@ -1044,6 +1055,16 @@ void bulk_load_service::update_partition_info_on_remote_storage_reply(
     }
 }
 
+inline uint_32 sum_map_number( std::unordered_map<gpid, uint_32> &mymap)
+{
+    uint_32 result = 0;
+    for (auto iter = mymap.begin(); iter != mymap.end();iter++) {
+        result += iter->seconed;
+    }
+    return result;
+}
+
+
 // ThreadPool: THREAD_POOL_META_STATE
 void bulk_load_service::update_app_status_on_remote_storage_unlocked(
     int32_t app_id, bulk_load_status::type new_status, error_code err, bool should_send_request)
@@ -1061,13 +1082,6 @@ void bulk_load_service::update_app_status_on_remote_storage_unlocked(
                 dsn::enum_to_string(new_status));
         return;
     }
-
-    //finish downloading just now,
-    if (old_status != new_status && new_status == bulk_load_status::BLS_DOWNLOADED){
-        _app_total_download_file_size = 
-    }
-
-
 
     if (_apps_pending_sync_flag[app_id]) {
         ddebug_f("app({}) has already sync bulk load status, wait and retry, current status = {}, "
@@ -1090,6 +1104,11 @@ void bulk_load_service::update_app_status_on_remote_storage_unlocked(
 
     _apps_pending_sync_flag[app_id] = true;
 
+    //finish downloading just now
+    if (old_status != new_status && new_status == bulk_load_status::BLS_DOWNLOADED){
+        _app_total_download_file_size = sum_map_number(_partitions_total_downloaded_file_size);
+    }
+
     if (bulk_load_status::BLS_INGESTING == new_status) {
         ainfo.is_ever_ingesting = true;
     }
@@ -1097,6 +1116,7 @@ void bulk_load_service::update_app_status_on_remote_storage_unlocked(
     ainfo.bulk_load_err = err;
     blob value = dsn::json::json_forwarder<app_bulk_load_info>::encode(ainfo);
 
+    ///set_data deal with meta_state_service_zookeeper
     _meta_svc->get_meta_storage()->set_data(
         get_app_bulk_load_path(app_id),
         std::move(value),
@@ -1122,6 +1142,7 @@ void bulk_load_service::update_app_status_on_remote_storage_reply(const app_bulk
         _apps_pending_sync_flag[app_id] = false;
         _apps_in_progress_count[app_id] = partition_count;
         // when rollback from ingesting, ingesting_count should be reset
+        //todo: maybe reset _app_total_download_file_size
         if (old_status == bulk_load_status::BLS_INGESTING &&
             new_status == bulk_load_status::BLS_DOWNLOADING) {
             reset_app_ingestion(app_id);
@@ -1137,6 +1158,8 @@ void bulk_load_service::update_app_status_on_remote_storage_reply(const app_bulk
         for (auto i = 0; i < partition_count; ++i) {
             partition_ingestion(ainfo.app_name, gpid(app_id, i));
         }
+
+        ///meybe
     }
 
     if (new_status == bulk_load_status::BLS_PAUSING ||
@@ -1208,6 +1231,7 @@ void bulk_load_service::partition_ingestion(const std::string &app_name, const g
     }
 
     partition_configuration pconfig;
+    ///看能不能查到partition的状态
     if (!check_partition_status(app_name,
                                 pid,
                                 true,
@@ -1218,7 +1242,7 @@ void bulk_load_service::partition_ingestion(const std::string &app_name, const g
                                 pconfig)) {
         return;
     }
-
+    ///check某个partition下全部replica成功 成功的话，这个partition就不用再做ingestion了
     if (check_ever_ingestion_succeed(pconfig, app_name, pid)) {
         return;
     }
@@ -1400,16 +1424,6 @@ inline void erase_map_elem_by_id(int32_t app_id, std::unordered_map<gpid, T> &my
         }
     }
 }
-
-inline uint_32 sum_map_number( std::unordered_map<gpid, uint_32> &mymap)
-{   
-    uint_32 result = 0;
-    for (auto iter = mymap.begin(); iter != mymap.end();iter++) {
-        
-    }
-}
-
-
 
 
 // ThreadPool: THREAD_POOL_META_STATE
@@ -2007,6 +2021,7 @@ void bulk_load_service::do_continue_app_bulk_load(
          app_status == bulk_load_status::BLS_PAUSING ||
          app_status == bulk_load_status::BLS_DOWNLOADING) &&
         different_count > 0) {
+        ///update partition info in ZK
         for (auto pidx : different_status_pidx_set) {
             update_partition_info_on_remote_storage(ainfo.app_name, gpid(app_id, pidx), app_status);
         }
@@ -2094,6 +2109,7 @@ void bulk_load_service::check_app_bulk_load_states(std::shared_ptr<app_state> ap
             // err = ERR_OK, is_app_bulk_load = true: app used to be executing bulk load
         });
 }
+
 
 } // namespace replication
 } // namespace dsn

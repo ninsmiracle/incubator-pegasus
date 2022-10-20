@@ -24,6 +24,8 @@
 namespace dsn {
 namespace replication {
 
+class result_writer;
+
 DSN_DECLARE_uint32(bulk_load_max_rollback_times);
 DSN_DECLARE_bool(enable_concurrent_bulk_load);
 
@@ -460,6 +462,26 @@ private:
         return (_bulk_load_app_id.find(app_id) != _bulk_load_app_id.end());
     }
 
+    std::unique_ptr<result_writer> make_bulk_load_cu_client(){
+        const char * cluster_name = dsn::get_current_cluster_name();
+        const char * usage_stat_app = dsn_config_get_value_string(
+            "pegasus.collector", "usage_stat_app", "", "app for recording usage statistics");
+        // initialize the client.
+        if (!pegasus_client_factory::initialize(nullptr)) {
+            dassert(false, "Initialize the bulkload cu writer client failed");
+        }
+        auto client = pegasus_client_factory::get_client(_cluster_name.c_str(), _usage_stat_app.c_str());
+        dassert(client != nullptr, "Initialize the bulkload cu writer client failed");
+
+        return  dsn::make_unique<result_writer>(client);
+    }
+
+    void initialize_bulk_load_cu_writer(){
+        _bulk_load_cu_writer = make_bulk_load_cu_client();
+    }
+
+
+
 private:
     friend class bulk_load_service_test;
     friend class meta_bulk_load_http_test;
@@ -469,12 +491,15 @@ private:
 
     std::unique_ptr<mss::meta_storage> _sync_bulk_load_storage;
     std::unique_ptr<ingestion_context> _ingestion_context;
+    std::unique_ptr<result_writer> _bulk_load_cu_writer;
     task_tracker _sync_tracker;
 
     zrwlock_nr &app_lock() const { return _state->_lock; }
     zrwlock_nr _lock; // bulk load states lock
 
     const std::string _bulk_load_root; // <cluster_root>/bulk_load
+
+    uint32_t _app_total_download_file_size = {0};
 
     /// bulk load states
     std::unordered_set<int32_t> _bulk_load_app_id;
