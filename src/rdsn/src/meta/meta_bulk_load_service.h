@@ -20,6 +20,7 @@
 #include "meta_bulk_load_ingestion_context.h"
 #include "meta_service.h"
 #include "server_state.h"
+#include "result_writer.h"
 
 namespace dsn {
 namespace replication {
@@ -470,7 +471,7 @@ private:
         if (!pegasus_client_factory::initialize(nullptr)) {
             dassert(false, "Initialize the bulkload cu writer client failed");
         }
-        auto client = pegasus_client_factory::get_client(_cluster_name.c_str(), _usage_stat_app.c_str());
+        auto client = pegasus_client_factory::get_client(cluster_name.c_str(), usage_stat_app.c_str());
         dassert(client != nullptr, "Initialize the bulkload cu writer client failed");
 
         return  dsn::make_unique<result_writer>(client);

@@ -21,8 +21,8 @@
 #include <dsn/dist/common.h>
 
 #include "meta_bulk_load_service.h"
-#include "../client_lib/pegasus_client_factory_impl.h"
-#include "../client_lib/pegasus_client_impl.h"
+
+
 
 
 namespace dsn {
@@ -695,7 +695,21 @@ void bulk_load_service::handle_app_ingestion(const bulk_load_response &response,
     if (response.is_group_ingestion_finished) {
         ddebug_f("app({}) partition({}) ingestion files succeed", app_name, pid);
         //todo: 在这里写入stat表，按分片来
+        //values like {"appId@partitionID:[bulkloadCU]"}
+        std::string bulk_load_cu_values = std::to_string(pid.get_app_id())+"@"+pid+":["+std::to_string( _partitions_total_downloaded_file_size[pid]) +"]";
 
+
+        std::stringstream out;
+        rapidjson::OStreamWrapper wrapper(out);
+        dsn::json::JsonWriter writer(wrapper);
+        dsn::json::json_encode(writer, bulk_load_cu_values);
+        
+        int64_t timestamp = dsn_now_ms() / 1000;
+        std::stringstream ss;
+        char buf[20];
+        utils::time_ms_to_date_time(timestamp * 1000, buf, sizeof(buf));
+        std::string timestamp_str = buf;
+        _bulk_load_cu_writer->set_result(timestamp_str, "bulkload_cu@" + primary_addr.to_string(), out.str());
 
 
 
@@ -1435,6 +1449,8 @@ void bulk_load_service::reset_local_bulk_load_states_unlocked(int32_t app_id,
     _apps_pending_sync_flag.erase(app_id);
     erase_map_elem_by_id(app_id, _partitions_pending_sync_flag);
     erase_map_elem_by_id(app_id, _partitions_total_download_progress);
+    erase_map_elem_by_id(app_id, _partitions_total_downloaded_file_size);
+    
     _apps_rolling_back.erase(app_id);
     _apps_rollback_count.erase(app_id);
     reset_app_ingestion(app_id);
