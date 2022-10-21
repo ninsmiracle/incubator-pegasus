@@ -965,6 +965,11 @@ void bulk_load_service::update_partition_info_on_remote_storage(const std::strin
         return;
     }
 
+    //write cu to table 'stat' before update remote status
+    if (new_status != bulk_load_status::BLS_DOWNLOADING) {
+        
+    }
+
     _partitions_pending_sync_flag[pid] = true;
     update_partition_info_unlock(pid, new_status, pinfo);
 
@@ -1062,14 +1067,12 @@ inline uint_32 sum_map_number( std::unordered_map<gpid, uint_32> &mymap)
     return result;
 }
 
-void bulk_load_cu_flush(gpid &pid){
-
-    std::string app_id = std::to_string(pid.get_app_id());
+void bulk_load_cu_flush(int32_t app_id){
 
     for(auto iter : _partitions_total_downloaded_file_size){
         current_pid = iter->first;
         //values like {"appId@partitionID:[bulkloadCU]"}
-        std::string bulk_load_cu_values = app_id+"@"+current_pid+":["+std::to_string( iter->second) +"]";
+        std::string bulk_load_cu_values = std::to_string(app_id)+"@"+current_pid+":["+std::to_string( iter->second) +"]";
 
         std::stringstream out;
         rapidjson::OStreamWrapper wrapper(out);
@@ -1125,6 +1128,7 @@ void bulk_load_service::update_app_status_on_remote_storage_unlocked(
     }
 
     _apps_pending_sync_flag[app_id] = true;
+
 
     //finish downloading just now
     if (old_status != new_status && new_status == bulk_load_status::BLS_DOWNLOADED){
@@ -1183,6 +1187,12 @@ void bulk_load_service::update_app_status_on_remote_storage_reply(const app_bulk
 
         ///meybe
     }
+
+     //after all partition update to succeed,and remote status has been changed,flush bulk load cu to stat
+    if(new_status == bulk_load_status::BLS_SUCCEED){
+        bulk_load_cu_flush(app_id);
+    }
+
 
     if (new_status == bulk_load_status::BLS_PAUSING ||
         new_status == bulk_load_status::BLS_DOWNLOADING ||
