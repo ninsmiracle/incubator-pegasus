@@ -694,24 +694,8 @@ void bulk_load_service::handle_app_ingestion(const bulk_load_response &response,
 
     if (response.is_group_ingestion_finished) {
         ddebug_f("app({}) partition({}) ingestion files succeed", app_name, pid);
-        //todo: 在这里写入stat表，按分片来
-        //values like {"appId@partitionID:[bulkloadCU]"}
-        std::string bulk_load_cu_values = std::to_string(pid.get_app_id())+"@"+pid+":["+std::to_string( _partitions_total_downloaded_file_size[pid]) +"]";
-
-
-        std::stringstream out;
-        rapidjson::OStreamWrapper wrapper(out);
-        dsn::json::JsonWriter writer(wrapper);
-        dsn::json::json_encode(writer, bulk_load_cu_values);
+        //todo: 原本在这里写入stat表，按分片来。但如果有分片彻底失败导致bulkload整体失败，就有部分分片cu被写入了，这是预期外的。
         
-        int64_t timestamp = dsn_now_ms() / 1000;
-        std::stringstream ss;
-        char buf[20];
-        utils::time_ms_to_date_time(timestamp * 1000, buf, sizeof(buf));
-        std::string timestamp_str = buf;
-        _bulk_load_cu_writer->set_result(timestamp_str, "bulkload_cu@" + primary_addr.to_string(), out.str());
-
-
 
         finish_ingestion(pid);
         update_partition_info_on_remote_storage(app_name, pid, bulk_load_status::BLS_SUCCEED);
@@ -1076,6 +1060,30 @@ inline uint_32 sum_map_number( std::unordered_map<gpid, uint_32> &mymap)
         result += iter->seconed;
     }
     return result;
+}
+
+void bulk_load_cu_flush(gpid &pid){
+
+    std::string app_id = std::to_string(pid.get_app_id());
+
+    for(auto iter : _partitions_total_downloaded_file_size){
+        current_pid = iter->first;
+        //values like {"appId@partitionID:[bulkloadCU]"}
+        std::string bulk_load_cu_values = app_id+"@"+current_pid+":["+std::to_string( iter->second) +"]";
+
+        std::stringstream out;
+        rapidjson::OStreamWrapper wrapper(out);
+        dsn::json::JsonWriter writer(wrapper);
+        dsn::json::json_encode(writer, bulk_load_cu_values);
+        
+        int64_t timestamp = dsn_now_ms() / 1000;
+        std::stringstream ss;
+        char buf[20];
+        utils::time_ms_to_date_time(timestamp * 1000, buf, sizeof(buf));
+        std::string timestamp_str = buf;
+        _bulk_load_cu_writer->set_result(timestamp_str, "bulkload_cu@" + primary_addr.to_string(), out.str());
+    }
+
 }
 
 
