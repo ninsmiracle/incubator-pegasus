@@ -1059,9 +1059,9 @@ inline int32_t sum_map_number( std::unordered_map<gpid, int32_t> &mymap)
 void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
 
     for(auto iter : _partitions_total_downloaded_file_size){
-        dsn::gpid current_gpid = iter->first;
+        dsn::gpid current_gpid = iter.first;
         //values like {"appId@partitionID:[bulkloadCU]"}
-        std::string bulk_load_cu_values = std::to_string(app_id)+"@"+std::to_string(current_gpid.get_partition_index())+":["+std::to_string( iter->second) +"]";
+        std::string bulk_load_cu_values = std::to_string(app_id)+"@"+std::to_string(current_gpid.get_partition_index())+":["+std::to_string( iter.second) +"]";
 
         std::stringstream out;
         rapidjson::OStreamWrapper wrapper(out);
@@ -1070,8 +1070,9 @@ void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
 
         int64_t timestamp = dsn_now_ms() / 1000;
         char buf[20];
-        utils::time_ms_to_date_time(timestamp * 1000, buf, sizeof(buf));
+        dsn::utils::time_ms_to_date_time(timestamp * 1000, buf, sizeof(buf));
         std::string timestamp_str = buf;
+
         _bulk_load_cu_writer->set_result(timestamp_str, "bulkload_cu@", out.str());
     }
 

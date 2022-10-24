@@ -31,7 +31,8 @@
 namespace dsn {
 namespace replication {
 
-class result_writer;
+///forward declaration
+//class result_writer;
 
 DSN_DECLARE_uint32(bulk_load_max_rollback_times);
 DSN_DECLARE_bool(enable_concurrent_bulk_load);
@@ -471,7 +472,7 @@ private:
         return (_bulk_load_app_id.find(app_id) != _bulk_load_app_id.end());
     }
 
-    std::unique_ptr<result_writer> make_bulk_load_cu_client(){
+    void initialize_bulk_load_cu_writer(){
         const char * cluster_name = dsn::get_current_cluster_name();
         const char * usage_stat_app = dsn_config_get_value_string(
             "pegasus.collector",
@@ -488,11 +489,7 @@ private:
         auto client = pegasus::pegasus_client_factory::get_client(cluster_name, usage_stat_app);
         dassert(client != nullptr, "Initialize the bulkload cu writer client failed");
 
-        return  dsn::make_unique<result_writer>(client);
-    }
-
-    void initialize_bulk_load_cu_writer(){
-        _bulk_load_cu_writer = make_bulk_load_cu_client();
+        _bulk_load_cu_writer =dsn::make_unique<result_writer>(client);
     }
 
 private:
