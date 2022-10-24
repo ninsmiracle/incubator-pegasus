@@ -1070,7 +1070,7 @@ void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
 
         int64_t timestamp = dsn_now_ms() / 1000;
         char buf[20];
-        dsn::utils::time_ms_to_date_time(timestamp * 1000, buf, sizeof(buf));
+        dsn::utils::time_ms_to_date_time((uint64_t)timestamp * 1000, buf, sizeof(buf));
         std::string timestamp_str = buf;
 
         _bulk_load_cu_writer->set_result(timestamp_str, "bulkload_cu@", out.str());

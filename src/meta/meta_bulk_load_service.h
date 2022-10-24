@@ -24,6 +24,7 @@
 #include "client_lib/pegasus_client_factory_impl.h"
 #include "utils/config_api.cpp"
 
+#include <utils/time_utils.h>
 #include <pegasus/client.h>
 //#include <server/result_writer.h>
 
