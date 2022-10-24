@@ -20,11 +20,13 @@
 #include "meta_bulk_load_ingestion_context.h"
 #include "meta_service.h"
 #include "server_state.h"
-#include "server/result_writer.h"
 #include "common/common.h"
 #include "client_lib/pegasus_client_factory_impl.h"
 #include "utils/config_api.cpp"
+
 #include <pegasus/client.h>
+#include <server/result_writer.h>
+
 
 namespace dsn {
 namespace replication {
@@ -476,12 +478,14 @@ private:
             "usage_stat_app",
             "",
             "app for recording usage statistics");
-        dassert(!usage_stat_app.empty(), "");
+        std::string usage_stat_app_str(usage_stat_app);
+        dassert(!usage_stat_app_str.empty(), "");
+
         // initialize the client.
         if (!pegasus::pegasus_client_factory::initialize(nullptr)) {
             dassert(false, "Initialize the bulkload cu writer client failed");
         }
-        auto client = pegasus::pegasus_client_factory::get_client(cluster_name.c_str(), usage_stat_app.c_str());
+        auto client = pegasus::pegasus_client_factory::get_client(cluster_name, usage_stat_app);
         dassert(client != nullptr, "Initialize the bulkload cu writer client failed");
 
         return  dsn::make_unique<result_writer>(client);

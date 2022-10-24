@@ -1451,11 +1451,12 @@ void bulk_load_service::reset_local_bulk_load_states_unlocked(int32_t app_id,
     erase_map_elem_by_id(app_id, _partitions_pending_sync_flag);
     erase_map_elem_by_id(app_id, _partitions_total_download_progress);
     erase_map_elem_by_id(app_id, _partitions_total_downloaded_file_size);
-    erase_map_elem_by_id(app_id,_app_total_download_file_size);
+
     _apps_rolling_back.erase(app_id);
     _apps_rollback_count.erase(app_id);
     reset_app_ingestion(app_id);
     _bulk_load_app_id.erase(app_id);
+    _app_total_download_file_size.erase(app_id);
 
     if (is_reset_result) {
         _app_bulk_load_info.erase(app_id);
