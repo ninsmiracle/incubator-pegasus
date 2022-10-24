@@ -26,14 +26,14 @@
 
 #include <utils/time_utils.h>
 #include <pegasus/client.h>
-//#include <server/result_writer.h>
+#include <server/result_writer.h>
 
-namespace pegasus {
-namespace server {
-///forward declaration
-class result_writer;
-}
-}
+//namespace pegasus {
+//namespace server {
+/////forward declaration
+//class result_writer;
+//}
+//}
 
 
 namespace dsn {
