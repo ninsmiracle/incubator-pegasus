@@ -25,14 +25,14 @@
 #include "utils/config_api.cpp"
 
 #include <pegasus/client.h>
-#include <server/result_writer.h>
+//#include <server/result_writer.h>
 
 
 namespace dsn {
 namespace replication {
 
 ///forward declaration
-//class result_writer;
+class result_writer;
 
 DSN_DECLARE_uint32(bulk_load_max_rollback_times);
 DSN_DECLARE_bool(enable_concurrent_bulk_load);
@@ -486,7 +486,7 @@ private:
         if (!pegasus::pegasus_client_factory::initialize(nullptr)) {
             dassert(false, "Initialize the bulkload cu writer client failed");
         }
-        auto client = pegasus::pegasus_client_factory::get_client(cluster_name, usage_stat_app);
+        pegasus_client *client = pegasus::pegasus_client_factory::get_client(cluster_name, usage_stat_app);
         dassert(client != nullptr, "Initialize the bulkload cu writer client failed");
 
         _bulk_load_cu_writer =dsn::make_unique<result_writer>(client);
