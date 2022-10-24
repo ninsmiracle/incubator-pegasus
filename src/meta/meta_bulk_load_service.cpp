@@ -1047,11 +1047,11 @@ void bulk_load_service::update_partition_info_on_remote_storage_reply(
     }
 }
 
-inline uint32_t sum_map_number( std::unordered_map<gpid, uint_32> &mymap)
+inline int32_t sum_map_number( std::unordered_map<gpid, int_32> &mymap)
 {
-    uint32_t result = 0;
+    int32_t result = 0;
     for (auto iter = mymap.begin(); iter != mymap.end();iter++) {
-        result += iter->seconed;
+        result += iter->second;
     }
     return result;
 }
@@ -1059,7 +1059,7 @@ inline uint32_t sum_map_number( std::unordered_map<gpid, uint_32> &mymap)
 void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
 
     for(auto iter : _partitions_total_downloaded_file_size){
-        current_pid = iter->first;
+        dsn::gpid current_pid = iter->first;
         //values like {"appId@partitionID:[bulkloadCU]"}
         std::string bulk_load_cu_values = std::to_string(app_id)+"@"+current_pid+":["+std::to_string( iter->second) +"]";
 
@@ -1072,7 +1072,7 @@ void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
         char buf[20];
         utils::time_ms_to_date_time(timestamp * 1000, buf, sizeof(buf));
         std::string timestamp_str = buf;
-        _bulk_load_cu_writer->set_result(timestamp_str, "bulkload_cu@" + primary_addr.to_string(), out.str());
+        _bulk_load_cu_writer->set_result(timestamp_str, "bulkload_cu@", out.str());
     }
 
 }
@@ -1122,7 +1122,7 @@ void bulk_load_service::update_app_status_on_remote_storage_unlocked(
     }
     ddebug_f("app({}) downloaded size {}  during bulk_load",
              ainfo.app_name,
-             dsn::enum_to_string(_app_total_download_file_size[app_id]);
+             dsn::enum_to_string(_app_total_download_file_size[app_id]));
 
 
     if (bulk_load_status::BLS_INGESTING == new_status) {
