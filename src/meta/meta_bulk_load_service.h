@@ -491,7 +491,7 @@ private:
         auto client = pegasus::pegasus_client_factory::get_client(cluster_name, usage_stat_app);
         dassert(client != nullptr, "Initialize the bulkload cu writer client failed");
 
-        _bulk_load_cu_writer =dsn::make_unique<result_writer>(client);
+        _bulk_load_cu_writer = make_unique<result_writer>(client);
     }
 
 private:
