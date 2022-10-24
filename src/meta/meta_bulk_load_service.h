@@ -470,18 +470,18 @@ private:
     }
 
     std::unique_ptr<result_writer> make_bulk_load_cu_client(){
-        std::string cluster_name = dsn::get_current_cluster_name();
-        std::string usage_stat_app = dsn::dsn_config_get_value_string(
+        const char * cluster_name = dsn::get_current_cluster_name();
+        const char * usage_stat_app = dsn_config_get_value_string(
             "pegasus.collector",
             "usage_stat_app",
             "",
             "app for recording usage statistics");
-        dassert(!_usage_stat_app.empty(), "");
+        dassert(!usage_stat_app.empty(), "");
         // initialize the client.
         if (!pegasus::pegasus_client_factory::initialize(nullptr)) {
             dassert(false, "Initialize the bulkload cu writer client failed");
         }
-        auto client = pegasus::pegasus_client_factory::get_client(cluster_name, usage_stat_app);
+        auto client = pegasus::pegasus_client_factory::get_client(cluster_name.c_str(), usage_stat_app.c_str());
         dassert(client != nullptr, "Initialize the bulkload cu writer client failed");
 
         return  dsn::make_unique<result_writer>(client);

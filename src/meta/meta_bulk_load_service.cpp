@@ -1061,7 +1061,7 @@ void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
     for(auto iter : _partitions_total_downloaded_file_size){
         dsn::gpid current_gpid = iter->first;
         //values like {"appId@partitionID:[bulkloadCU]"}
-        std::string bulk_load_cu_values = std::to_string(app_id)+"@"+std::string(current_gpid.get_partition_index())+":["+std::to_string( iter->second) +"]";
+        std::string bulk_load_cu_values = std::to_string(app_id)+"@"+std::to_string(current_gpid.get_partition_index())+":["+std::to_string( iter->second) +"]";
 
         std::stringstream out;
         rapidjson::OStreamWrapper wrapper(out);
@@ -1122,7 +1122,7 @@ void bulk_load_service::update_app_status_on_remote_storage_unlocked(
     }
     ddebug_f("app({}) downloaded size {}  during bulk_load",
              ainfo.app_name,
-             dsn::enum_to_string(_app_total_download_file_size[app_id]));
+             std::to_string(_app_total_download_file_size[app_id]));
 
 
     if (bulk_load_status::BLS_INGESTING == new_status) {
