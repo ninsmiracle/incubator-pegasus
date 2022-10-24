@@ -52,6 +52,9 @@ bulk_load_service::bulk_load_service(meta_service *meta_svc, const std::string &
 {
 }
 
+//avoid generate destructor by 'inline' way
+bulk_load_service::~bulk_load_service() = default;
+
 // ThreadPool: THREAD_POOL_META_SERVER
 void bulk_load_service::initialize_bulk_load_service()
 {
