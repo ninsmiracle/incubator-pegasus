@@ -850,9 +850,10 @@ void replica_bulk_loader::report_group_download_progress(/*out*/ bulk_load_respo
         zauto_read_lock l(_lock);
         primary_state.__set_download_progress(_download_progress.load());
         primary_state.__set_download_status(_download_status.load());
+        primary_state.__set_downloaded_file_size(_cur_downloaded_size.load());
     }
 
-    primary_state.__set_downloaded_file_size(_cur_downloaded_size.load());
+
 
 
     response.group_bulk_load_state[_replica->_primary_states.membership.primary] = primary_state;
@@ -887,7 +888,7 @@ void replica_bulk_loader::report_group_download_progress(/*out*/ bulk_load_respo
     ddebug_replica("total download progress = {}%", total_progress);
     response.__set_total_download_progress(total_progress);
 
-    response.__set_total_download_file_size(total_download_file_size);
+    response.__set_total_downloaded_file_size(total_download_file_size);
 
 }
 

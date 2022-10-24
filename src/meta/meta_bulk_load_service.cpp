@@ -1027,6 +1027,7 @@ void bulk_load_service::update_partition_info_on_remote_storage_reply(
         case bulk_load_status::BLS_DOWNLOADING: {
             _partitions_bulk_load_state.erase(pid);
             _partitions_total_download_progress[pid] = 0;
+            _partitions_total_downloaded_file_size[pid] = 0;
             _partitions_cleaned_up[pid] = false;
 
             if (--_apps_in_progress_count[pid.get_app_id()] == 0) {
@@ -1068,7 +1069,6 @@ void bulk_load_cu_flush(int32_t app_id){
         dsn::json::json_encode(writer, bulk_load_cu_values);
 
         int64_t timestamp = dsn_now_ms() / 1000;
-        std::stringstream ss;
         char buf[20];
         utils::time_ms_to_date_time(timestamp * 1000, buf, sizeof(buf));
         std::string timestamp_str = buf;
@@ -1116,7 +1116,7 @@ void bulk_load_service::update_app_status_on_remote_storage_unlocked(
 
     _apps_pending_sync_flag[app_id] = true;
 
-    //finish downloading just now
+    //finish downloading just now,now this map just for debug
     if (old_status != new_status && new_status == bulk_load_status::BLS_DOWNLOADED){
         _app_total_download_file_size[app_id] = sum_map_number(_partitions_total_downloaded_file_size);
     }
