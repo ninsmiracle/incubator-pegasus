@@ -1047,7 +1047,7 @@ void bulk_load_service::update_partition_info_on_remote_storage_reply(
     }
 }
 
-inline int32_t sum_map_number( std::unordered_map<gpid, int_32> &mymap)
+inline int32_t sum_map_number( std::unordered_map<gpid, int32_t> &mymap)
 {
     int32_t result = 0;
     for (auto iter = mymap.begin(); iter != mymap.end();iter++) {
@@ -1059,9 +1059,9 @@ inline int32_t sum_map_number( std::unordered_map<gpid, int_32> &mymap)
 void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
 
     for(auto iter : _partitions_total_downloaded_file_size){
-        dsn::gpid current_pid = iter->first;
+        dsn::gpid current_gpid = iter->first;
         //values like {"appId@partitionID:[bulkloadCU]"}
-        std::string bulk_load_cu_values = std::to_string(app_id)+"@"+current_pid+":["+std::to_string( iter->second) +"]";
+        std::string bulk_load_cu_values = std::to_string(app_id)+"@"+std::string(current_gpid.get_partition_index())+":["+std::to_string( iter->second) +"]";
 
         std::stringstream out;
         rapidjson::OStreamWrapper wrapper(out);
