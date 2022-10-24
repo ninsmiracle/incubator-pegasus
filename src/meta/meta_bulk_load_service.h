@@ -21,6 +21,8 @@
 #include "meta_service.h"
 #include "server_state.h"
 #include "server/result_writer.h"
+#include "common/common.h"
+#include "client_lib/pegasus_client_factory_impl.h"
 
 namespace dsn {
 namespace replication {
@@ -352,6 +354,8 @@ private:
     void create_missing_partition_dir(const std::string &app_name,
                                       const gpid &pid,
                                       int32_t partition_count);
+    //write bulk load cu to table 'stat'
+    void bulk_load_cu_flush(int32_t app_id);
 
     ///
     /// helper functions
@@ -464,14 +468,14 @@ private:
     }
 
     std::unique_ptr<result_writer> make_bulk_load_cu_client(){
-        const char * cluster_name = dsn::get_current_cluster_name();
-        const char * usage_stat_app = dsn_config_get_value_string(
+        std::string cluster_name = dsn::get_current_cluster_name();
+        std::string usage_stat_app = dsn_config_get_value_string(
             "pegasus.collector", "usage_stat_app", "", "app for recording usage statistics");
         // initialize the client.
         if (!pegasus_client_factory::initialize(nullptr)) {
             dassert(false, "Initialize the bulkload cu writer client failed");
         }
-        auto client = pegasus_client_factory::get_client(cluster_name.c_str(), usage_stat_app.c_str());
+        auto client = pegasus_client_factory::get_client(cluster_name, usage_stat_app);
         dassert(client != nullptr, "Initialize the bulkload cu writer client failed");
 
         return  dsn::make_unique<result_writer>(client);

@@ -1047,16 +1047,16 @@ void bulk_load_service::update_partition_info_on_remote_storage_reply(
     }
 }
 
-inline uint_32 sum_map_number( std::unordered_map<gpid, uint_32> &mymap)
+inline uint32_t sum_map_number( std::unordered_map<gpid, uint_32> &mymap)
 {
-    uint_32 result = 0;
+    uint32_t result = 0;
     for (auto iter = mymap.begin(); iter != mymap.end();iter++) {
         result += iter->seconed;
     }
     return result;
 }
 
-void bulk_load_cu_flush(int32_t app_id){
+void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
 
     for(auto iter : _partitions_total_downloaded_file_size){
         current_pid = iter->first;
