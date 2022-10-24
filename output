@@ -1,0 +1,43 @@
+diff --git a/src/meta/meta_bulk_load_service.h b/src/meta/meta_bulk_load_service.h
+index 9bff4aa21..d00fbd561 100644
+--- a/src/meta/meta_bulk_load_service.h
++++ b/src/meta/meta_bulk_load_service.h
+@@ -28,12 +28,18 @@
+ #include <pegasus/client.h>
+ //#include <server/result_writer.h>
+ 
++namespace pegasus {
++namespace server {
++///forward declaration
++class result_writer;
++}
++}
++
+ 
+ namespace dsn {
+ namespace replication {
+ 
+-///forward declaration
+-class result_writer;
++
+ 
+ DSN_DECLARE_uint32(bulk_load_max_rollback_times);
+ DSN_DECLARE_bool(enable_concurrent_bulk_load);
+@@ -491,7 +497,7 @@ private:
+         auto client = pegasus::pegasus_client_factory::get_client(cluster_name, usage_stat_app);
+         dassert(client != nullptr, "Initialize the bulkload cu writer client failed");
+ 
+-        _bulk_load_cu_writer = make_unique<result_writer>(client);
++        _bulk_load_cu_writer = make_unique<pegasus::server::result_writer>(client);
+     }
+ 
+ private:
+@@ -504,7 +510,7 @@ private:
+     std::unique_ptr<mss::meta_storage> _sync_bulk_load_storage;
+     std::unique_ptr<ingestion_context> _ingestion_context;
+     task_tracker _sync_tracker;
+-    std::unique_ptr<result_writer> _bulk_load_cu_writer;
++    std::unique_ptr<pegasus::server::result_writer> _bulk_load_cu_writer;
+ 
+     zrwlock_nr &app_lock() const { return _state->_lock; }
+     zrwlock_nr _lock; // bulk load states lock
