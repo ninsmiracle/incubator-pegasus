@@ -22,7 +22,7 @@
 #include "server_state.h"
 #include "common/common.h"
 #include "client_lib/pegasus_client_factory_impl.h"
-#include "utils/config_api.cpp"
+//#include "utils/config_api.h"
 
 #include <utils/time_utils.h>
 #include <pegasus/client.h>
