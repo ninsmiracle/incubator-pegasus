@@ -28,18 +28,9 @@
 #include <pegasus/client.h>
 #include <server/result_writer.h>
 
-//namespace pegasus {
-//namespace server {
-/////forward declaration
-//class result_writer;
-//}
-//}
-
 
 namespace dsn {
 namespace replication {
-
-
 
 DSN_DECLARE_uint32(bulk_load_max_rollback_times);
 DSN_DECLARE_bool(enable_concurrent_bulk_load);
@@ -518,7 +509,7 @@ private:
     const std::string _bulk_load_root; // <cluster_root>/bulk_load
 
     /// bulk load states
-    std::unordered_map<app_id, int32_t> _app_total_download_file_size;
+    std::unordered_map<app_id, int64_t> _app_total_download_file_size;
     std::unordered_set<int32_t> _bulk_load_app_id;
     std::unordered_map<app_id, app_bulk_load_info> _app_bulk_load_info;
 

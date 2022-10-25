@@ -628,6 +628,12 @@ void bulk_load_service::handle_app_downloading(const bulk_load_response &respons
         _partitions_total_download_progress[pid] = total_progress;
         _partitions_bulk_load_state[pid] = response.group_bulk_load_state;
         _partitions_total_downloaded_file_size[pid] = partition_total_file_size;
+        ddebug_f("set partitions total downloaded file size bulk load response from app({}) partition({}), primary_status({}), "
+                 "partition_total_file_size = {}",
+                 app_name,
+                 pid,
+                 dsn::enum_to_string(response.primary_bulk_load_status),
+                 partition_total_file_size);
     }
 
     // update partition status to `downloaded` if all replica downloaded
@@ -1050,9 +1056,9 @@ void bulk_load_service::update_partition_info_on_remote_storage_reply(
     }
 }
 
-inline int32_t sum_map_number( std::unordered_map<gpid, int32_t> &mymap)
+inline int64_t sum_map_number( std::unordered_map<gpid, int64_t> &mymap)
 {
-    int32_t result = 0;
+    int64_t result = 0;
     for (auto iter = mymap.begin(); iter != mymap.end();iter++) {
         result += iter->second;
     }

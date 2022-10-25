@@ -152,10 +152,16 @@ private:
     partition_status::type status() const { return _replica->status(); }
     ballot get_ballot() const { return _replica->get_ballot(); }
     task_tracker *tracker() { return _replica->tracker(); }
+    int64_t trans_filesize_to_cu(int64_t download_file_size){
+        int64_t bulkload_cu = download_file_size > 0 ? (download_file_size + _bulkload_capacity_unit_size - 1) >> _log_bulkload_cu_size: 1;
+        return bulkload_cu;
+    }
 
 private:
     replica *_replica;
     replica_stub *_stub;
+    uint64_t _bulkload_capacity_unit_size;
+    uint32_t _log_bulkload_cu_size;
 
     friend class replica;
     friend class replica_stub;

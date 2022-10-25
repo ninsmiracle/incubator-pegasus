@@ -30,6 +30,15 @@ namespace replication {
 replica_bulk_loader::replica_bulk_loader(replica *r)
     : replica_base(r), _replica(r), _stub(r->get_replica_stub())
 {
+    _bulkload_capacity_unit_size =
+        dsn_config_get_value_uint64("dsn::replication",
+                                    "perf_counter_bulkload_capacity_unit_size",
+                                    4 * 1024,
+                                    "capacity unit size of read requests, default 4KB");
+    dassert(powerof2(_read_capacity_unit_size),
+            "'perf_counter_read_capacity_unit_size' must be a power of 2");
+    _log_bulkload_cu_size = log(_bulkload_capacity_unit_size) / log(2);
+
 }
 
 replica_bulk_loader::~replica_bulk_loader() {}
@@ -850,20 +859,19 @@ void replica_bulk_loader::report_group_download_progress(/*out*/ bulk_load_respo
         zauto_read_lock l(_lock);
         primary_state.__set_download_progress(_download_progress.load());
         primary_state.__set_download_status(_download_status.load());
-        primary_state.__set_downloaded_file_size(_cur_downloaded_size.load());
+        //trans file size to bulkload cu and set primary downloaded file size
+        primary_state.__set_downloaded_file_size(trans_filesize_to_cu(_cur_downloaded_size.load()));
     }
 
 
-
-
     response.group_bulk_load_state[_replica->_primary_states.membership.primary] = primary_state;
-    ddebug_replica("primary = {}, download progress = {}%, status = {},replica download file size = {}",
+    ddebug_replica("primary = {}, download progress = {}%, status = {},replica download bulkload cu = {}",
                    _replica->_primary_states.membership.primary.to_string(),
                    primary_state.download_progress,
                    primary_state.download_status,
                    primary_state.downloaded_file_size);
 
-    int32_t total_download_file_size = primary_state.downloaded_file_size;
+    int64_t total_download_file_size = primary_state.downloaded_file_size;
     int32_t total_progress = primary_state.download_progress;
     for (const auto &target_address : _replica->_primary_states.membership.secondaries) {
         const auto &secondary_state =
@@ -879,8 +887,9 @@ void replica_bulk_loader::report_group_download_progress(/*out*/ bulk_load_respo
         response.group_bulk_load_state[target_address] = secondary_state;
         total_progress += s_progress;
 
-        int32_t s_download_file_size=
+        int64_t s_download_file_size=
             secondary_state.__isset.downloaded_file_size ? secondary_state.downloaded_file_size : 0;
+
         total_download_file_size += s_download_file_size;
     }
 
@@ -1024,7 +1033,7 @@ void replica_bulk_loader::report_bulk_load_states_to_primary(
         zauto_read_lock l(_lock);
         bulk_load_state.__set_download_progress(_download_progress.load());
         bulk_load_state.__set_download_status(_download_status.load());
-        bulk_load_state.__set_downloaded_file_size(_cur_downloaded_size.load());
+        bulk_load_state.__set_downloaded_file_size(trans_filesize_to_cu(_cur_downloaded_size.load()));
     } break;
     case bulk_load_status::BLS_INGESTING:
         bulk_load_state.__set_ingest_status(_replica->_app->get_ingestion_status());
