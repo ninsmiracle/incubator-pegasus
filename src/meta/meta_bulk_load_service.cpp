@@ -1067,7 +1067,7 @@ inline int64_t sum_map_number( std::unordered_map<gpid, int32_t> &mymap)
 
 void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
 
-    ddebug_f("temp debug  app_id({}) _partitions_total_downloaded_file_size size is {}",
+    ddebug_f("temp debug  app_id({}) _partitions_total_downloaded_file_size size is ({})",
              app_id,
              _partitions_total_downloaded_file_size.size());
     for(auto iter : _partitions_total_downloaded_file_size){
@@ -1076,7 +1076,7 @@ void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
         std::string bulk_load_cu_values = std::to_string(app_id)+"@"+std::to_string(current_gpid.get_partition_index())+":["+std::to_string( iter.second) +"]";
         ddebug_f("temp debug2  app_id({}) now  is in partition{}",
                  app_id,
-                 std::to_string(current_gpid.get_partition_index());
+                 std::to_string(current_gpid.get_partition_index()));
 
 
         std::stringstream out;
