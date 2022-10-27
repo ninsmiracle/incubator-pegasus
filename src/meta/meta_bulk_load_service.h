@@ -122,7 +122,6 @@ class bulk_load_service
 {
 public:
     explicit bulk_load_service(meta_service *meta_svc, const std::string &bulk_load_dir);
-    ~bulk_load_service();
 
     void initialize_bulk_load_service();
 

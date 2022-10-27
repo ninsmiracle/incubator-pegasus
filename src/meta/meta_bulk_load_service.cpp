@@ -52,9 +52,6 @@ bulk_load_service::bulk_load_service(meta_service *meta_svc, const std::string &
 {
 }
 
-//avoid generate destructor by 'inline' way
-bulk_load_service::~bulk_load_service() = default;
-
 // ThreadPool: THREAD_POOL_META_SERVER
 void bulk_load_service::initialize_bulk_load_service()
 {
@@ -1073,6 +1070,11 @@ void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
     std::string timestamp_str = buf;
 
     for(auto iter : _partitions_total_downloaded_file_size){
+        //only succeed app_id's partition should be writen to 'stat'
+        if(iter.first.get_app_id() != app_id){
+            continue ;
+        }
+
         dsn::gpid current_gpid = iter.first;
         //sort key like {"bulkload_cu@appId:partitionID"}
         std::string sort_key = "bulkload_cu@" + std::to_string(app_id)+":"+std::to_string(current_gpid.get_partition_index());
