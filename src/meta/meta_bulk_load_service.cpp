@@ -1067,32 +1067,31 @@ inline int64_t sum_map_number( std::unordered_map<gpid, int32_t> &mymap)
 
 void bulk_load_service::bulk_load_cu_flush(int32_t app_id){
 
-    ddebug_f("temp debug  app_id({}) _partitions_total_downloaded_file_size size is ({})",
-             app_id,
-             _partitions_total_downloaded_file_size.size());
+    int64_t timestamp = dsn_now_ms() / 1000;
+    char buf[20];
+    dsn::utils::time_ms_to_date_time((uint64_t)timestamp * 1000, buf, sizeof(buf));
+    std::string timestamp_str = buf;
 
     for(auto iter : _partitions_total_downloaded_file_size){
         dsn::gpid current_gpid = iter.first;
-        //values like {"appId@partitionID:[bulkloadCU]"}
-        std::string bulk_load_cu_values = std::to_string(app_id)+"@"+std::to_string(current_gpid.get_partition_index())+":["+std::to_string( iter.second) +"]";
+        //sort key like {"bulkload_cu@appId:partitionID"}
+        std::string sort_key = "bulkload_cu@" + std::to_string(app_id)+":"+std::to_string(current_gpid.get_partition_index());
 
-        ddebug_f("temp debug2  app_id({}) now  is in partition{} downloaded cu size is {}",
-                 app_id,
-                 std::to_string(current_gpid.get_partition_index()),
-                 std::to_string( iter.second));
+        //values like {appId : [bulkloadCU]}
+        std::map<int32_t, std::vector<int64_t>> values;
+        values.emplace(app_id,std::vector<int64_t>{iter.second});
 
-//        std::stringstream out;
-//        rapidjson::OStreamWrapper wrapper(out);
-//        dsn::json::JsonWriter writer(wrapper);
-//        dsn::json::json_encode(writer, bulk_load_cu_values);
+        std::stringstream out;
+        rapidjson::OStreamWrapper wrapper(out);
+        dsn::json::JsonWriter writer(wrapper);
+        dsn::json::json_encode(writer, values);
 
-        int64_t timestamp = dsn_now_ms() / 1000;
-        char buf[20];
-        dsn::utils::time_ms_to_date_time((uint64_t)timestamp * 1000, buf, sizeof(buf));
-        std::string timestamp_str = buf;
-
-        _bulk_load_cu_writer->set_result(timestamp_str, "bulkload_cu@", bulk_load_cu_values);
+        _bulk_load_cu_writer->set_result(timestamp_str, sort_key, out.str());
     }
+
+    ddebug_f("At time({}) app_id({}) finish bulk load and write cu to stat",
+             timestamp_str,
+             app_id);
 
 }
 

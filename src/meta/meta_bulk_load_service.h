@@ -525,7 +525,7 @@ private:
     std::unordered_map<gpid, std::map<rpc_address, partition_bulk_load_state>>
         _partitions_bulk_load_state;
     // partition_index -> group total downloaded file size
-    std::unordered_map<gpid, int32_t> _partitions_total_downloaded_file_size;
+    std::unordered_map<gpid, int64_t> _partitions_total_downloaded_file_size;
 
     std::unordered_map<gpid, bool> _partitions_cleaned_up;
     // Used for bulk load failed and app unavailable to avoid duplicated clean up
