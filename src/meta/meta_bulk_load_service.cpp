@@ -1053,7 +1053,7 @@ void bulk_load_service::update_partition_info_on_remote_storage_reply(
     }
 }
 
-inline int64_t sum_map_number( std::unordered_map<gpid, int32_t> &mymap)
+inline int64_t sum_map_number( std::unordered_map<gpid, int64_t> &mymap)
 {
     int64_t result = 0;
     for (auto iter = mymap.begin(); iter != mymap.end();iter++) {
