@@ -1463,6 +1463,8 @@ void replica_stub::query_configuration_by_node()
     get_local_replicas(req.stored_replicas);
     req.__isset.stored_replicas = true;
 
+    get_local_replica_storages(req.partition_storage,req.disk_storage);
+
     ::dsn::marshall(msg, req);
 
     LOG_INFO("send query node partitions request to meta server, stored_replicas_count = {}",
@@ -3217,6 +3219,61 @@ void replica_stub::update_disks_status()
         }
     }
 }
+
+void replica_stub::get_local_replica_storages(std::map<dsn::gpid,int32_t> &result,std::map<std::string,int32_t> &disk_result)
+{
+    //计算每个磁盘路径下的文件磁盘大小
+    for (const auto &dir_node : _fs_manager._dir_nodes) {
+        std::string tag = dir_node->tag;
+        std::string full_dir = dir_node->full_dir;
+        // holding_replicas  -->  map<app_id, std::set<dsn::gpid>>
+        uint32_t disk_hold_replicas = 0;
+        for (const auto &holding_replicas : dir_node->holding_replicas) {
+            const std::set<dsn::gpid> &pids = holding_replicas.second;
+            //std::map<dsn::gpid, int32_t> dir_map;
+            for (const auto &pid : pids) {
+                replica_ptr replica = get_replica(pid);
+                if (replica == nullptr) {
+                    continue;
+                }
+
+                std::string gpid_path = replica->dir();
+                // dsn::utils::filesystem::disk_space_info info;
+                int64_t partition_dir_size;
+                if (!dsn::utils::filesystem::file_size(gpid_path, partition_dir_size)) {
+                    LOG_ERROR("get {} storage failed", gpid_path);
+                    // 暂时设置为失败一个就略过这个失败
+                }
+                int partition_disk_capacity_mb = partition_dir_size / 1024 / 1024;
+                result[pid] = partition_disk_capacity_mb;
+
+                LOG_ERROR("send partition_disk usage to meta server succeed: partition_dir = {},this replica partition_disk_capacity_mb = {}",
+                         gpid_path,
+                         partition_disk_capacity_mb);
+            }
+            disk_hold_replicas += result.size();
+        }
+
+        dsn::utils::filesystem::disk_space_info total_info;
+        //增加ssd的整体占用量，不等于上面的gpid的和  因为其他集群的replica可能也在磁盘内，还有一些数据残留的节点
+        //get_disk_space_info获取整个磁盘的大小
+        if(!dsn::utils::filesystem::get_disk_space_info(full_dir,total_info)){
+            LOG_ERROR("get {} ssd total storage failed", full_dir);
+        }
+        int32_t ssd_total_ssd_space_capacity = total_info.capacity / 1024 / 1024;
+        int32_t ssd_total_ssd_space_available = total_info.available / 1024 / 1024;
+        //record disk space used
+        disk_result[tag] = ssd_total_ssd_space_capacity - ssd_total_ssd_space_available;
+        LOG_ERROR("load disk space to meta server succeed: dir = {}, SSD total capacity_mb = {},available_mb = {}, current ssd =  {} holds replicas num = {}",
+                 full_dir,
+                 ssd_total_ssd_space_capacity,
+                 ssd_total_ssd_space_available,
+                 tag,
+                 disk_hold_replicas);
+    }
+}
+
+
 
 void replica_stub::update_config(const std::string &name)
 {

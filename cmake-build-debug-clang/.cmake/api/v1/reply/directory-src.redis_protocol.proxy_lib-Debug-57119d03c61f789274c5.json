@@ -1,0 +1,60 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install",
+			"dsn_install_library",
+			"dsn_add_static_library"
+		],
+		"files" : 
+		[
+			"cmake_modules/BaseFunctions.cmake",
+			"src/redis_protocol/proxy_lib/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 33,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 155,
+				"parent" : 1
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 53,
+				"parent" : 2
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"src/redis_protocol/proxy_lib/libpegasus.rproxylib.a"
+			],
+			"targetId" : "pegasus.rproxylib::@9b1ce2e552c92c6eba33",
+			"targetIndex" : 51,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "src/redis_protocol/proxy_lib",
+		"source" : "src/redis_protocol/proxy_lib"
+	}
+}

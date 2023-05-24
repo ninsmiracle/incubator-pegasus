@@ -1,0 +1,53 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install",
+			"dsn_install_executable"
+		],
+		"files" : 
+		[
+			"cmake_modules/BaseFunctions.cmake",
+			"src/utils/long_adder_bench/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 39,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 60,
+				"parent" : 1
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "bin/long_adder_bench",
+			"paths" : 
+			[
+				"src/utils/long_adder_bench/long_adder_bench"
+			],
+			"targetId" : "long_adder_bench::@c9506aba06012fe4a80e",
+			"targetIndex" : 48,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "src/utils/long_adder_bench",
+		"source" : "src/utils/long_adder_bench"
+	}
+}

@@ -1,0 +1,2689 @@
+{
+	"archive" : {},
+	"artifacts" : 
+	[
+		{
+			"path" : "src/runtime/libdsn_runtime.a"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"install",
+			"target_link_libraries",
+			"add_compile_options",
+			"dsn_setup_compiler_flags",
+			"dsn_common_setup",
+			"add_definitions",
+			"dsn_setup_system_libs",
+			"include_directories",
+			"dsn_setup_include_path",
+			"include",
+			"set_property",
+			"define_file_basename_for_sources"
+		],
+		"files" : 
+		[
+			"src/runtime/CMakeLists.txt",
+			"cmake_modules/BaseFunctions.cmake",
+			"src/CMakeLists.txt",
+			"cmake_modules/ThriftUtils.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 32,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 58,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 56,
+				"parent" : 0
+			},
+			{
+				"file" : 2
+			},
+			{
+				"command" : 5,
+				"file" : 2,
+				"line" : 24,
+				"parent" : 4
+			},
+			{
+				"command" : 4,
+				"file" : 1,
+				"line" : 398,
+				"parent" : 5
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 210,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 211,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 213,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 214,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 215,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 216,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 217,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 218,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 219,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 223,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 226,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 229,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 2,
+				"line" : 27,
+				"parent" : 4
+			},
+			{
+				"command" : 6,
+				"file" : 1,
+				"line" : 202,
+				"parent" : 6
+			},
+			{
+				"command" : 6,
+				"file" : 1,
+				"line" : 194,
+				"parent" : 6
+			},
+			{
+				"command" : 7,
+				"file" : 1,
+				"line" : 397,
+				"parent" : 5
+			},
+			{
+				"command" : 6,
+				"file" : 1,
+				"line" : 292,
+				"parent" : 22
+			},
+			{
+				"command" : 6,
+				"file" : 1,
+				"line" : 205,
+				"parent" : 6
+			},
+			{
+				"command" : 9,
+				"file" : 1,
+				"line" : 399,
+				"parent" : 5
+			},
+			{
+				"command" : 8,
+				"file" : 1,
+				"line" : 311,
+				"parent" : 25
+			},
+			{
+				"command" : 10,
+				"file" : 1,
+				"line" : 402,
+				"parent" : 5
+			},
+			{
+				"file" : 3,
+				"parent" : 27
+			},
+			{
+				"command" : 8,
+				"file" : 3,
+				"line" : 31,
+				"parent" : 28
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 30,
+				"parent" : 4
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 31,
+				"parent" : 4
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 32,
+				"parent" : 4
+			},
+			{
+				"command" : 8,
+				"file" : 2,
+				"line" : 33,
+				"parent" : 4
+			},
+			{
+				"command" : 12,
+				"file" : 0,
+				"line" : 57,
+				"parent" : 0
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			},
+			{
+				"command" : 11,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 34
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 35,
+					"define" : "__FILENAME__=\"core_main.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				46
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 36,
+					"define" : "__FILENAME__=\"env.sim.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				47
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 37,
+					"define" : "__FILENAME__=\"fault_injector.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				48
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 38,
+					"define" : "__FILENAME__=\"global_config.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				49
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 39,
+					"define" : "__FILENAME__=\"message_utils.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				50
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 40,
+					"define" : "__FILENAME__=\"nativerun.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				51
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 41,
+					"define" : "__FILENAME__=\"profiler.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				52
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 42,
+					"define" : "__FILENAME__=\"providers.common.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				53
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 43,
+					"define" : "__FILENAME__=\"scheduler.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				54
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 44,
+					"define" : "__FILENAME__=\"service_api_c.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				55
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 45,
+					"define" : "__FILENAME__=\"service_engine.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				56
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 46,
+					"define" : "__FILENAME__=\"simulator.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				57
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 47,
+					"define" : "__FILENAME__=\"threadpool_code.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				58
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 48,
+					"define" : "__FILENAME__=\"tool_api.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				59
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 49,
+					"define" : "__FILENAME__=\"tracer.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				60
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : " -std=c++1y -gdwarf-4 -std=c++1y -gdwarf-4 -g -fdiagnostics-color=always   -g"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-Werror"
+				},
+				{
+					"backtrace" : 9,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 10,
+					"fragment" : "-Wno-strict-aliasing"
+				},
+				{
+					"backtrace" : 11,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 12,
+					"fragment" : "-Wno-unused-variable"
+				},
+				{
+					"backtrace" : 13,
+					"fragment" : "-Wno-deprecated-declarations"
+				},
+				{
+					"backtrace" : 14,
+					"fragment" : "-Wno-inconsistent-missing-override"
+				},
+				{
+					"backtrace" : 15,
+					"fragment" : "-Wno-attributes"
+				},
+				{
+					"backtrace" : 16,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 17,
+					"fragment" : "-Wno-deprecated-register"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-implicit-float-conversion"
+				},
+				{
+					"backtrace" : 19,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 20,
+					"define" : "DSN_BUILD_HOSTNAME=nins-PC"
+				},
+				{
+					"backtrace" : 21,
+					"define" : "DSN_BUILD_TYPE=Debug"
+				},
+				{
+					"backtrace" : 23,
+					"define" : "DSN_ENABLE_GPERF"
+				},
+				{
+					"backtrace" : 50,
+					"define" : "__FILENAME__=\"zlocks.cpp\""
+				},
+				{
+					"backtrace" : 24,
+					"define" : "__STDC_FORMAT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 26,
+					"path" : "/home/nins/code/incubator-pegasus/thirdparty/output/include"
+				},
+				{
+					"backtrace" : 29,
+					"path" : "/home/nins/code/incubator-pegasus/cmake-build-debug-clang/thrift-gen"
+				},
+				{
+					"backtrace" : 30,
+					"path" : "/home/nins/code/incubator-pegasus/src"
+				},
+				{
+					"backtrace" : 31,
+					"path" : "/home/nins/code/incubator-pegasus/src/common/serialization_helper"
+				},
+				{
+					"backtrace" : 32,
+					"path" : "/home/nins/code/incubator-pegasus/src/include"
+				},
+				{
+					"backtrace" : 33,
+					"path" : "/home/nins/code/incubator-pegasus/src/builder/output/include"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				61
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"id" : "dsn.perf_counter::@95908618ec45d52b17be"
+		},
+		{
+			"id" : "dsn.rpc::@0a903ee71c8fe195a5a6"
+		},
+		{
+			"id" : "dsn.task::@7cbdf1bf2211589b9e3d"
+		},
+		{
+			"id" : "dsn.security::@9703a9d3fa5c15a500ed"
+		},
+		{
+			"id" : "dsn_ranger::@c46ce18841e9d965a8b4"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "dsn_utils::@f1b38b22aeb65474a6c5"
+		}
+	],
+	"id" : "dsn_runtime::@6e5025570506519f0aff",
+	"install" : 
+	{
+		"destinations" : 
+		[
+			{
+				"backtrace" : 2,
+				"path" : "lib"
+			}
+		],
+		"prefix" : 
+		{
+			"path" : "/usr/local"
+		}
+	},
+	"name" : "dsn_runtime",
+	"nameOnDisk" : "libdsn_runtime.a",
+	"paths" : 
+	{
+		"build" : "src/runtime",
+		"source" : "src/runtime"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Object Libraries",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17,
+				18,
+				19,
+				20,
+				21,
+				22,
+				23,
+				24,
+				25,
+				26,
+				27,
+				28,
+				29,
+				30,
+				31,
+				32,
+				33,
+				34,
+				35,
+				36,
+				37,
+				38,
+				39,
+				40,
+				41,
+				42,
+				43,
+				44,
+				45
+			]
+		},
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				46,
+				47,
+				48,
+				49,
+				50,
+				51,
+				52,
+				53,
+				54,
+				55,
+				56,
+				57,
+				58,
+				59,
+				60,
+				61
+			]
+		},
+		{
+			"name" : "Header Files",
+			"sourceIndexes" : 
+			[
+				62
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/ranger/CMakeFiles/dsn_ranger.dir/access_type.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/ranger/CMakeFiles/dsn_ranger.dir/ranger_resource_policy.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/ranger/CMakeFiles/dsn_ranger.dir/ranger_resource_policy_manager.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/access_controller.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/client_negotiation.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/init.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/kinit_context.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/meta_access_controller.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/negotiation.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/negotiation_manager.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/replica_access_controller.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/sasl_client_wrapper.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/sasl_init.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/sasl_server_wrapper.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/sasl_wrapper.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/server_negotiation.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/security/CMakeFiles/dsn.security.dir/__/__/__/thrift-gen/security_types.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/asio_net_provider.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/asio_rpc_session.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/dns_resolver.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/dsn_message_parser.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/message_parser.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/network.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/network.sim.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/raw_message_parser.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/rpc_address.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/rpc_engine.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/rpc_host_port.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/rpc_message.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/rpc_task.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/thrift_message_parser.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/rpc/CMakeFiles/dsn.rpc.dir/__/__/__/thrift-gen/request_meta_types.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/task/CMakeFiles/dsn.task.dir/hpc_task_queue.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/task/CMakeFiles/dsn.task.dir/simple_task_queue.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/task/CMakeFiles/dsn.task.dir/task.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/task/CMakeFiles/dsn.task.dir/task_code.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/task/CMakeFiles/dsn.task.dir/task_engine.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/task/CMakeFiles/dsn.task.dir/task_engine.sim.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/task/CMakeFiles/dsn.task.dir/task_queue.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/task/CMakeFiles/dsn.task.dir/task_spec.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/task/CMakeFiles/dsn.task.dir/task_tracker.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/runtime/task/CMakeFiles/dsn.task.dir/task_worker.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/perf_counter/CMakeFiles/dsn.perf_counter.dir/builtin_counters.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/perf_counter/CMakeFiles/dsn.perf_counter.dir/perf_counter.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/perf_counter/CMakeFiles/dsn.perf_counter.dir/perf_counter_atomic.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "cmake-build-debug-clang/src/perf_counter/CMakeFiles/dsn.perf_counter.dir/perf_counters.cpp.o",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/runtime/core_main.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "src/runtime/env.sim.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 2,
+			"path" : "src/runtime/fault_injector.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 3,
+			"path" : "src/runtime/global_config.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 4,
+			"path" : "src/runtime/message_utils.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 5,
+			"path" : "src/runtime/nativerun.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 6,
+			"path" : "src/runtime/profiler.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 7,
+			"path" : "src/runtime/providers.common.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 8,
+			"path" : "src/runtime/scheduler.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 9,
+			"path" : "src/runtime/service_api_c.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 10,
+			"path" : "src/runtime/service_engine.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 11,
+			"path" : "src/runtime/simulator.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 12,
+			"path" : "src/runtime/threadpool_code.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 13,
+			"path" : "src/runtime/tool_api.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 14,
+			"path" : "src/runtime/tracer.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 15,
+			"path" : "src/runtime/zlocks.cpp",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "src/meta/disk_usage_app_balance_policy.h",
+			"sourceGroupIndex" : 2
+		}
+	],
+	"type" : "STATIC_LIBRARY"
+}

@@ -1,0 +1,69 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install",
+			"dsn_install_executable"
+		],
+		"files" : 
+		[
+			"cmake_modules/BaseFunctions.cmake",
+			"src/shell/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 72,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 60,
+				"parent" : 1
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 65,
+				"parent" : 1
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "bin/pegasus_shell",
+			"paths" : 
+			[
+				"src/shell/pegasus_shell"
+			],
+			"targetId" : "pegasus_shell::@f9a454401d50237771d4",
+			"targetIndex" : 64,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "bin/pegasus_shell",
+			"paths" : 
+			[
+				"src/shell/config.ini"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "src/shell",
+		"source" : "src/shell"
+	}
+}

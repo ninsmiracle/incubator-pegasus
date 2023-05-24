@@ -437,11 +437,17 @@ public:
 
 typedef std::unordered_map<rpc_address, node_state> node_mapper;
 typedef std::map<dsn::gpid, std::shared_ptr<configuration_balancer_request>> migration_list;
+typedef std::unordered_map<rpc_address, std::map<dsn::gpid,int32_t>> replica_disk_usage_mapper;
+// node rpc_address -> disk-tag -> usage
+typedef std::unordered_map<rpc_address, std::map<std::string,int32_t>> disk_total_usage_mapper;
+
 
 struct meta_view
 {
     app_mapper *apps;
     node_mapper *nodes;
+    replica_disk_usage_mapper  *replicas;
+    disk_total_usage_mapper *disks;
 };
 
 inline node_state *get_node_state(node_mapper &nodes, rpc_address addr, bool create_new)

@@ -1,0 +1,69 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install",
+			"dsn_install_executable"
+		],
+		"files" : 
+		[
+			"cmake_modules/BaseFunctions.cmake",
+			"src/geo/bench/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 45,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 60,
+				"parent" : 1
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 65,
+				"parent" : 1
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "bin/pegasus_geo_bench",
+			"paths" : 
+			[
+				"src/geo/bench/pegasus_geo_bench"
+			],
+			"targetId" : "pegasus_geo_bench::@ca291b18e5a387d6c0b1",
+			"targetIndex" : 55,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "bin/pegasus_geo_bench",
+			"paths" : 
+			[
+				"src/geo/bench/config.ini"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "src/geo/bench",
+		"source" : "src/geo/bench"
+	}
+}

@@ -1,0 +1,60 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install",
+			"dsn_install_library",
+			"dsn_add_shared_library"
+		],
+		"files" : 
+		[
+			"cmake_modules/BaseFunctions.cmake",
+			"src/replica/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 85,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 161,
+				"parent" : 1
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 53,
+				"parent" : 2
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"src/replica/libdsn_replica_server.so"
+			],
+			"targetId" : "dsn_replica_server::@b047262856201e0e12eb",
+			"targetIndex" : 39,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "src/replica",
+		"source" : "src/replica"
+	}
+}

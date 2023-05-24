@@ -103,6 +103,8 @@ struct configuration_query_by_node_request
     1:dsn.rpc_address  node;
     2:optional list<metadata.replica_info> stored_replicas;
     3:optional replica_server_info info;
+    4:map<dsn.gpid,i32>  partition_storage; // <gpid,value>
+    5:map<string,i32>  disk_storage;  //<disk,value>
 }
 
 struct configuration_query_by_node_response

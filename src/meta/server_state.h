@@ -147,7 +147,7 @@ public:
 
     void lock_read(zauto_read_lock &other);
     void lock_write(zauto_write_lock &other);
-    const meta_view get_meta_view() { return {&_all_apps, &_nodes}; }
+    const meta_view get_meta_view() { return {&_all_apps, &_nodes,&_replica_disk,&_disks}; }
     std::shared_ptr<app_state> get_app(const std::string &name) const
     {
         auto iter = _exist_apps.find(name);
@@ -425,6 +425,9 @@ private:
     std::map<std::string, std::shared_ptr<app_state>> _exist_apps;
     //_exist_apps + dropped apps: app_id -> app_state
     app_mapper _all_apps;
+
+    replica_disk_usage_mapper _replica_disk;
+    disk_total_usage_mapper _disks;
 
     // for load balancer
     migration_list _temporary_list;

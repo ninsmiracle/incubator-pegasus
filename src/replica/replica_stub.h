@@ -391,6 +391,11 @@ private:
         int32_t app_id,
         /*pidx => data_version*/ std::unordered_map<int32_t, uint32_t> &version_map);
 
+    void get_local_replica_storages(std::map<dsn::gpid ,int32_t> &result,
+                                    std::map<std::string,int32_t> &disk_result);
+
+
+
 #ifdef DSN_ENABLE_GPERF
     // Try to release tcmalloc memory back to operating system
     // If release_all = true, it will release all reserved-not-used memory
