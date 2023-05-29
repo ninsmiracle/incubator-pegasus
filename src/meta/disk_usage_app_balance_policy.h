@@ -53,27 +53,69 @@ private:
     bool _only_move_primary;
 };
 
-class copy_secondary_operation_by_disk : public copy_replica_operation
+class copy_operation_by_disk : public copy_replica_operation
 {
 public:
-    copy_secondary_operation_by_disk(const std::shared_ptr<app_state> app,
+    copy_operation_by_disk(const std::shared_ptr<app_state> app,
                              const app_mapper &apps,
                              node_mapper &nodes,
+                           const replica_disk_usage_mapper &replicas,
+                           const disk_total_usage_mapper &disks,
                              const std::vector<dsn::rpc_address> &address_vec,
                              const std::unordered_map<dsn::rpc_address, int> &address_id,
                              int replicas_low);
-    ~copy_secondary_operation_by_disk() = default;
+    ~copy_operation_by_disk() = default;
+
+    bool start(migration_list *result);
+    void init_ordered_address_by_disk();
+    void update_ordered_address_by_disk(dsn::gpid selected_gpid);
+    dsn::gpid select_partition(migration_list *result);
+    std::string get_max_load_disk(dsn::rpc_address addr);
+    dsn::gpid select_max_load_gpid(const partition_set *partitions,migration_list *result);
+
 
 private:
-    bool can_continue();
-    int get_partition_count(const node_state &ns) const;
-    bool can_select(gpid pid, migration_list *result);
-    balance_type get_balance_type();
-    bool only_copy_primary() { return false; }
 
-    int _replicas_low;
+    std::vector<int> _disk_usage;
+    std::set<int, std::function<bool(int left, int right)>> _ordered_address_by_disk;
+    replica_disk_usage_mapper _replicas;
+    disk_total_usage_mapper _disks;
+
 
     FRIEND_TEST(copy_secondary_operation, misc);
 };
+
+
+class copy_primary_operation_by_disk : public copy_operation_by_disk
+{
+public:
+    copy_primary_operation_by_disk(const std::shared_ptr<app_state> app,
+                           const app_mapper &apps,
+                           node_mapper &nodes,
+                           const std::vector<dsn::rpc_address> &address_vec,
+                           const std::unordered_map<dsn::rpc_address, int> &address_id,
+                           bool have_lower_than_average,
+                           int replicas_low);
+    ~copy_primary_operation_by_disk() = default;
+
+private:
+    int get_partition_count(const node_state &ns) const;
+
+    bool only_copy_primary() { return true; }
+    bool can_select(gpid pid, migration_list *result);
+    bool can_continue();
+    enum balance_type get_balance_type();
+
+    bool _have_lower_than_average;
+    int _replicas_low;
+
+
+};
+
+
+
+
+
+
 } // namespace replication
 } // namespace dsn
