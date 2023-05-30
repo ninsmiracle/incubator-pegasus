@@ -40,10 +40,10 @@ public:
     ~disk_usage_app_balance_policy() = default;
 
     void balance(bool checker, const meta_view *global_view, migration_list *list) override;
-    bool copy_primary(const std::shared_ptr<app_state> &app,bool still_have_less_than_average);
 
 private:
     bool need_balance_secondaries(bool balance_checker);
+    bool copy_primary(const std::shared_ptr<app_state> &app,bool still_have_less_than_average);
     bool copy_secondary(const std::shared_ptr<app_state> &app, bool place_holder);
 
     std::vector<std::unique_ptr<command_deregister>> _cmds;

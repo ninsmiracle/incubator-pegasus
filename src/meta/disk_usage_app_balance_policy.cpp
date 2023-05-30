@@ -81,6 +81,23 @@ bool calc_disk_usage(node_mapper &nodes,
     }
 }
 
+void disk_usage_app_balance_policy::disk_usage_app_balance_policy(meta_service *svc) : load_balance_policy(svc)
+{
+    //todo:5/31
+    //1.加策略选择开关
+    //2.加阈值
+    //3.优化计算，不考虑物理使用量
+    _cmds.emplace_back(dsn::command_manager::instance().register_command(
+        {"meta.lb.balancer_in_turn"},
+        "meta.lb.balancer_in_turn <true|false>",
+        "control whether do app balancer in turn",
+        [this](const std::vector<std::string> &args) {
+            return remote_command_set_bool_flag(_balancer_in_turn, "lb.balancer_in_turn", args);
+        }));
+}
+
+
+
 void disk_usage_app_balance_policy::balance(bool checker, const meta_view *global_view, migration_list *list)
 {
     init(global_view, list);
@@ -89,6 +106,7 @@ void disk_usage_app_balance_policy::balance(bool checker, const meta_view *globa
                          checker,
                          _balancer_in_turn,
                          _only_move_primary,
+                         //todo:在这里primary_balance可能要重写，这里的多态不知道是否起作用
                          std::bind(&disk_usage_app_balance_policy::primary_balance,
                                    this,
                                    std::placeholders::_1,
@@ -143,13 +161,11 @@ bool disk_usage_app_balance_policy::copy_secondary(const std::shared_ptr<app_sta
 
     int replicas_low = total_disk_usage_of_this_app / _alive_nodes;
 
+    //todo:优雅实现copy_secondary_operation_by_disk类
     std::unique_ptr<copy_replica_operation> operation = std::make_unique<copy_secondary_operation_by_disk>(
         app, apps, nodes, address_vec, address_id, replicas_low);
     return operation->start(_migration_result);
 }
-
-
-
 
 
 
@@ -176,14 +192,20 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
 }
 
 
-copy_operation_by_disk::copy_operation_by_disk(
-    const std::shared_ptr<app_state> app,
-    const app_mapper &apps,
-    node_mapper &nodes,
-    const replica_disk_usage_mapper &replicas,
-    const disk_total_usage_mapper &disks,
-    const std::vector<dsn::rpc_address> &address_vec,
-    const std::unordered_map<dsn::rpc_address, int> &address_id)
+
+
+
+
+
+
+copy_operation_by_disk::copy_operation_by_disk(const std::shared_ptr<app_state> app,
+                                                                     const app_mapper &apps,
+                                                                     node_mapper &nodes,
+                                                                     const replica_disk_usage_mapper &replicas,
+                                                                     const disk_total_usage_mapper &disks,
+                                                                     const std::vector<dsn::rpc_address> &address_vec,
+                                                                     const std::unordered_map<dsn::rpc_address, int> &address_id,
+                                                                     int replicas_low)
     : _app(app), _apps(apps), _nodes(nodes), _address_vec(address_vec), _address_id(address_id),_replicas(replicas),_disks(disks)
 {
 }
@@ -287,7 +309,7 @@ std::string copy_operation_by_disk::get_max_load_disk(dsn::rpc_address addr)
 
 dsn::gpid copy_operation_by_disk::select_max_load_gpid(const partition_set *partitions,migration_list *result)
 {
-    int id_max = *_ordered_address_ids.rbegin();
+    int id_max = *_ordered_address_by_disk.rbegin();
     const node_state &ns = _nodes.find(_address_vec[id_max])->second;
     std::string max_disk_tag = get_max_load_disk(ns.addr());
 
@@ -311,17 +333,16 @@ dsn::gpid copy_operation_by_disk::select_max_load_gpid(const partition_set *part
 }
 
 
-copy_primary_operation_by_disk::copy_primary_operation_by_disk(
-    const std::shared_ptr<app_state> app,
-    const app_mapper &apps,
-    node_mapper &nodes,
-    const replica_disk_usage_mapper &replicas,
-    const disk_total_usage_mapper &disks,
-    const std::vector<dsn::rpc_address> &address_vec,
-    const std::unordered_map<dsn::rpc_address, int> &address_id,
-    bool have_lower_than_average,
-    int replicas_low)
-    : copy_operation_by_disk(app, apps, nodes, replicas,disks,address_vec, address_id)
+copy_primary_operation_by_disk::copy_primary_operation_by_disk(const std::shared_ptr<app_state> app,
+                                                               const app_mapper &apps,
+                                                               node_mapper &nodes,
+                                                               const replica_disk_usage_mapper &replicas,
+                                                               const disk_total_usage_mapper &disks,
+                                                               const std::vector<dsn::rpc_address> &address_vec,
+                                                               const std::unordered_map<dsn::rpc_address, int> &address_id,
+                                                               bool have_lower_than_average,
+                                                               int replicas_low)
+    : copy_operation_by_disk(app, apps, nodes, replicas,disks,address_vec, address_id,replicas_low)
 {
     _have_lower_than_average = have_lower_than_average;
     _replicas_low = replicas_low;
@@ -346,7 +367,8 @@ bool copy_primary_operation_by_disk::can_continue()
     }
 
     int id_max = *_ordered_address_by_disk.rbegin();
-    if (!_have_lower_than_average && _disk_usage[id_max] - _disk_usage[id_min] <= 1) {
+    //todo: 6657是平衡阈值的代写
+    if (!_have_lower_than_average && _disk_usage[id_max] - _disk_usage[id_min] <= 6657) {
        LOG_DEBUG("{}: stop the copy due to the primary will be balanced later.",
                 _app->get_logname());
        return false;
@@ -355,31 +377,6 @@ bool copy_primary_operation_by_disk::can_continue()
 }
 
 
-
-
-
-
-
-
-
-bool copy_primary_operation_by_disk::can_continue()
-{
-    int id_min = *_ordered_address_by_disk.begin();
-    //当前节点的最小replica数量都大于理论值，没有迁移replica的目标节点
-    if (_have_lower_than_average && _partition_counts[id_min] >= _replicas_low) {
-        LOG_DEBUG("{}: stop the copy due to primaries on all nodes will reach low later.",
-                 _app->get_logname());
-        return false;
-    }
-
-    int id_max = *_ordered_address_by_disk.rbegin();
-    if (!_have_lower_than_average && _partition_counts[id_max] - _partition_counts[id_min] <= 1) {
-        LOG_DEBUG("{}: stop the copy due to the primary will be balanced later.",
-                 _app->get_logname());
-        return false;
-    }
-    return true;
-}
 
 
 
