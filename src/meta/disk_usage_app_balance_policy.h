@@ -40,6 +40,7 @@ public:
     ~disk_usage_app_balance_policy() = default;
 
     void balance(bool checker, const meta_view *global_view, migration_list *list) override;
+    bool copy_primary(const std::shared_ptr<app_state> &app,bool still_have_less_than_average);
 
 private:
     bool need_balance_secondaries(bool balance_checker);
@@ -72,15 +73,18 @@ public:
     dsn::gpid select_partition(migration_list *result);
     std::string get_max_load_disk(dsn::rpc_address addr);
     dsn::gpid select_max_load_gpid(const partition_set *partitions,migration_list *result);
+    int get_node_disk_usage(const node_state &ns) const;
 
 
-private:
+    int get_partition_count(const node_state &ns) const{}; //无用的纯虚函数实现
+
+protected:
+    virtual int get_disk_usage(const node_state &ns) const = 0;
 
     std::vector<int> _disk_usage;
     std::set<int, std::function<bool(int left, int right)>> _ordered_address_by_disk;
     replica_disk_usage_mapper _replicas;
     disk_total_usage_mapper _disks;
-
 
     FRIEND_TEST(copy_secondary_operation, misc);
 };
@@ -92,6 +96,8 @@ public:
     copy_primary_operation_by_disk(const std::shared_ptr<app_state> app,
                            const app_mapper &apps,
                            node_mapper &nodes,
+                                   const replica_disk_usage_mapper &replicas,
+                                   const disk_total_usage_mapper &disks,
                            const std::vector<dsn::rpc_address> &address_vec,
                            const std::unordered_map<dsn::rpc_address, int> &address_id,
                            bool have_lower_than_average,
@@ -99,7 +105,7 @@ public:
     ~copy_primary_operation_by_disk() = default;
 
 private:
-    int get_partition_count(const node_state &ns) const;
+    int get_disk_usage(const node_state &ns) const;
 
     bool only_copy_primary() { return true; }
     bool can_select(gpid pid, migration_list *result);

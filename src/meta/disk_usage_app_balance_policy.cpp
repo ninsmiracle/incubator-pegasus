@@ -73,13 +73,106 @@ bool calc_disk_usage(node_mapper &nodes,
     };
 
     if (only_primary) {
-        //在这里迭代执行
         bool result = ns->for_each_primary(id, add_one_replica_to_disk_usage);
         return result;
     } else {
         bool result = ns->for_each_partition(id, add_one_replica_to_disk_usage);
         return result;
     }
+}
+
+void disk_usage_app_balance_policy::balance(bool checker, const meta_view *global_view, migration_list *list)
+{
+    init(global_view, list);
+    const app_mapper &apps = *_global_view->apps;
+    if (!execute_balance(apps,
+                         checker,
+                         _balancer_in_turn,
+                         _only_move_primary,
+                         std::bind(&disk_usage_app_balance_policy::primary_balance,
+                                   this,
+                                   std::placeholders::_1,
+                                   std::placeholders::_2))) {
+        return;
+    }
+
+    if (!need_balance_secondaries(checker)) {
+        return;
+    }
+
+    execute_balance(apps,
+                    checker,
+                    _balancer_in_turn,
+                    _only_move_primary,
+                    std::bind(&disk_usage_app_balance_policy::copy_secondary,
+                              this,
+                              std::placeholders::_1,
+                              std::placeholders::_2));
+}
+
+//没改
+bool disk_usage_app_balance_policy::need_balance_secondaries(bool balance_checker)
+{
+    if (!balance_checker && !_migration_result->empty()) {
+        LOG_INFO("stop to do secondary balance coz we already have actions to do");
+        return false;
+    }
+    if (_only_primary_balancer) {
+        LOG_INFO("stop to do secondary balancer coz it is not allowed");
+        return false;
+    }
+    return true;
+}
+
+bool disk_usage_app_balance_policy::copy_secondary(const std::shared_ptr<app_state> &app, bool place_holder)
+{
+    node_mapper &nodes = *(_global_view->nodes);
+    const app_mapper &apps = *_global_view->apps;
+    replica_disk_usage_mapper &replicas = *_global_view->replicas;
+    disk_total_usage_mapper &disks =  *_global_view->disks;
+
+    //get all replica disk usage of current app
+    int total_disk_usage_of_this_app = 0;
+    for(auto gpid_map_it : replicas){
+        for(auto iter : gpid_map_it.second){
+            if (iter.first.get_app_id() == app->app_id){
+                total_disk_usage_of_this_app += iter.second;
+            }
+        }
+    }
+
+    int replicas_low = total_disk_usage_of_this_app / _alive_nodes;
+
+    std::unique_ptr<copy_replica_operation> operation = std::make_unique<copy_secondary_operation_by_disk>(
+        app, apps, nodes, address_vec, address_id, replicas_low);
+    return operation->start(_migration_result);
+}
+
+
+
+
+
+
+bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state> &app,bool still_have_less_than_average){
+    node_mapper &nodes = *(_global_view->nodes);
+    const app_mapper &apps = *_global_view->apps;
+    replica_disk_usage_mapper &replicas = *_global_view->replicas;
+    disk_total_usage_mapper &disks =  *_global_view->disks;
+    //get all replica disk usage of current app
+    int total_disk_usage_of_this_app = 0;
+    for(auto gpid_map_it : replicas){
+        for(auto iter : gpid_map_it.second){
+            if (iter.first.get_app_id() == app->app_id){
+                total_disk_usage_of_this_app += iter.second;
+            }
+        }
+    }
+
+    int replicas_low = total_disk_usage_of_this_app / _alive_nodes;
+
+    std::unique_ptr<copy_replica_operation> operation = std::make_unique<copy_primary_operation_by_disk>(
+        app, apps, nodes,replicas,disks, address_vec, address_id, still_have_less_than_average, replicas_low);
+    return operation->start(_migration_result);
 }
 
 
@@ -114,12 +207,24 @@ bool copy_operation_by_disk::start(migration_list *result)
     return true;
 }
 
+int copy_operation_by_disk::get_node_disk_usage(const dsn::replication::node_state &ns) const
+{
+    int app_relica_disk_usage = 0;
+    for(auto iter : _replicas.at(ns.addr())){
+        if(iter.first.get_app_id() == _app->app_id){
+            app_relica_disk_usage += iter.second;
+        }
+    }
+    return app_relica_disk_usage;
+}
+
+
 void copy_operation_by_disk::init_ordered_address_by_disk()
 {
     _disk_usage.resize(_address_vec.size(), 0);
     for (const auto &iter : _nodes) {
         auto id = _address_id.at(iter.first);
-        _disk_usage[id] = get_partition_count(iter.second);
+        _disk_usage[id] = get_node_disk_usage(iter.second);
     }
 
     std::set<int, std::function<bool(int left, int right)>> ordered_queue(
@@ -171,9 +276,9 @@ std::string copy_operation_by_disk::get_max_load_disk(dsn::rpc_address addr)
     int max_disk_load = 0;
     std::string max_disk_tag;
     for(auto iter : _disks[addr]){
-        if(iter->second > max_disk_load){
-            max_disk_load = iter->second;
-            max_disk_tag = iter->first;
+        if(iter.second > max_disk_load){
+            max_disk_load = iter.second;
+            max_disk_tag = iter.first;
         }
     }
 
@@ -206,7 +311,48 @@ dsn::gpid copy_operation_by_disk::select_max_load_gpid(const partition_set *part
 }
 
 
+copy_primary_operation_by_disk::copy_primary_operation_by_disk(
+    const std::shared_ptr<app_state> app,
+    const app_mapper &apps,
+    node_mapper &nodes,
+    const replica_disk_usage_mapper &replicas,
+    const disk_total_usage_mapper &disks,
+    const std::vector<dsn::rpc_address> &address_vec,
+    const std::unordered_map<dsn::rpc_address, int> &address_id,
+    bool have_lower_than_average,
+    int replicas_low)
+    : copy_operation_by_disk(app, apps, nodes, replicas,disks,address_vec, address_id)
+{
+    _have_lower_than_average = have_lower_than_average;
+    _replicas_low = replicas_low;
+}
 
+
+
+
+
+bool copy_primary_operation_by_disk::can_select(gpid pid, migration_list *result)
+{
+    return pid.get_app_id() == _app->app_id && result->find(pid) == result->end();
+}
+
+bool copy_primary_operation_by_disk::can_continue()
+{
+    int id_min = *_ordered_address_by_disk.begin();
+    if (_have_lower_than_average && _disk_usage[id_min] >= _replicas_low) {
+       LOG_DEBUG("{}: stop the copy due to primaries on all nodes will reach low later.",
+                _app->get_logname());
+       return false;
+    }
+
+    int id_max = *_ordered_address_by_disk.rbegin();
+    if (!_have_lower_than_average && _disk_usage[id_max] - _disk_usage[id_min] <= 1) {
+       LOG_DEBUG("{}: stop the copy due to the primary will be balanced later.",
+                _app->get_logname());
+       return false;
+    }
+    return true;
+}
 
 
 
