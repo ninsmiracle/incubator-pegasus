@@ -40,6 +40,7 @@ public:
     ~disk_usage_app_balance_policy() = default;
 
     void balance(bool checker, const meta_view *global_view, migration_list *list) override;
+    bool init(const dsn::replication::meta_view *global_view, dsn::replication::migration_list *list);
 
 private:
     bool need_balance_secondaries(bool balance_checker);
@@ -48,10 +49,17 @@ private:
 
     std::vector<std::unique_ptr<command_deregister>> _cmds;
 
+    std::string ctrl_assgin_balance_threshold(const std::vector<std::string> &args);
+
     // options
     bool _balancer_in_turn;
     bool _only_primary_balancer;
     bool _only_move_primary;
+
+    //new add
+    int _balance_threshold;
+    int _min_replica_disk_usage;
+
 };
 
 class copy_operation_by_disk : public copy_replica_operation

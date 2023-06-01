@@ -24,7 +24,15 @@
 
 namespace dsn {
 namespace replication {
+DSN_DEFINE_bool(meta_server, balancer_in_turn, false, "balance the apps one-by-one/concurrently");
+DSN_DEFINE_bool(meta_server, only_primary_balancer, false, "only try to make the primary balanced");
+DSN_DEFINE_bool(meta_server,
+                only_move_primary,
+                false,
+                "only try to make the primary balanced by move");
+
 DSN_DECLARE_uint64(min_live_node_count_for_unfreeze);
+DSN_DECLARE_uint64(balance_threshold);
 
 const std::string &get_disk_tag(const app_mapper &apps, const rpc_address &node, const gpid &pid)
 {
@@ -81,12 +89,52 @@ bool calc_disk_usage(node_mapper &nodes,
     }
 }
 
-void disk_usage_app_balance_policy::disk_usage_app_balance_policy(meta_service *svc) : load_balance_policy(svc)
+//const meta_view *global_view
+int get_min_replica_disk_usage(const meta_view *global_view){
+    int min_replica_usage = INT32_MAX;
+    for(auto node_pair : *global_view->replicas){
+        for(auto gpid_pair : node_pair.second){
+            if(gpid_pair.second < min_replica_usage){
+                min_replica_usage = gpid_pair.second;
+            }
+        }
+    }
+
+    return min_replica_usage;
+}
+
+std::string disk_usage_app_balance_policy::ctrl_assgin_balance_threshold(const std::vector<std::string> &args){
+    std::string result("OK");
+    if (args.empty()) {
+        result = std::to_string(_balance_threshold);
+    } else {
+        if (args[0] == "DEFAULT") {
+            //get default value in config.ini,now default value is 20MB
+            _balance_threshold = FLAGS_balance_threshold;
+        } else {
+            int32_t v = 0;
+            if (!dsn::buf2int32(args[0], v) || v <= 0) {
+                result = std::string("ERR: invalid arguments");
+            } else {
+                _balance_threshold = v;
+            }
+        }
+    }
+
+    return result;
+}
+
+disk_usage_app_balance_policy::disk_usage_app_balance_policy(meta_service *svc) : load_balance_policy(svc)
 {
-    //todo:5/31
-    //1.加策略选择开关
-    //2.加阈值
-    //3.优化计算，不考虑物理使用量
+    if (_svc != nullptr) {
+        _balancer_in_turn = FLAGS_balancer_in_turn;
+        _only_primary_balancer = FLAGS_only_primary_balancer;
+        _only_move_primary = FLAGS_only_move_primary;
+    } else {
+        _balancer_in_turn = false;
+        _only_primary_balancer = false;
+        _only_move_primary = false;
+    }
     _cmds.emplace_back(dsn::command_manager::instance().register_command(
         {"meta.lb.balancer_in_turn"},
         "meta.lb.balancer_in_turn <true|false>",
@@ -94,13 +142,58 @@ void disk_usage_app_balance_policy::disk_usage_app_balance_policy(meta_service *
         [this](const std::vector<std::string> &args) {
             return remote_command_set_bool_flag(_balancer_in_turn, "lb.balancer_in_turn", args);
         }));
+
+    _cmds.emplace_back(dsn::command_manager::instance().register_command(
+        {"meta.lb.only_primary_balancer"},
+        "meta.lb.only_primary_balancer <true|false>",
+        "control whether do only primary balancer",
+        [this](const std::vector<std::string> &args) {
+            return remote_command_set_bool_flag(
+                _only_primary_balancer, "lb.only_primary_balancer", args);
+        }));
+
+    _cmds.emplace_back(dsn::command_manager::instance().register_command(
+        {"meta.lb.only_move_primary"},
+        "meta.lb.only_move_primary <true|false>",
+        "control whether only move primary in balancer",
+        [this](const std::vector<std::string> &args) {
+            return remote_command_set_bool_flag(_only_move_primary, "lb.only_move_primary", args);
+        }));
+    //register disk balance threshold : meta.lb.disk_balance_threshold
+    _cmds.emplace_back(dsn::command_manager::instance().register_command(
+        {"meta.lb.disk_balance_threshold"},
+        "meta.lb.disk_balance_threshold <number MB>)",
+        "control the disk usage balance threshold to continue or finish balance",
+        [this](const std::vector<std::string> &args) {
+            return ctrl_assgin_balance_threshold(args);
+        }));
 }
 
+bool disk_usage_app_balance_policy::init(const dsn::replication::meta_view *global_view, dsn::replication::migration_list *list)
+{
+    _global_view = global_view;
+    _migration_result = list;
+    const node_mapper &nodes = *_global_view->nodes;
+    _alive_nodes = nodes.size();
+    //number_nodes(nodes);
+
+    //阈值赋值
+    _min_replica_disk_usage = get_min_replica_disk_usage(global_view);
+    if(_min_replica_disk_usage > _balance_threshold){
+        LOG_DEBUG("Balance threshold is not larger than min replica disk usage,adjust it.");
+        return false;
+    }
+
+    return true;
+}
 
 
 void disk_usage_app_balance_policy::balance(bool checker, const meta_view *global_view, migration_list *list)
 {
-    init(global_view, list);
+    //when min_replica_disk_usage > balance_threshold will not do balance
+    if(!init(global_view, list)){
+        return;
+    }
     const app_mapper &apps = *_global_view->apps;
     if (!execute_balance(apps,
                          checker,
@@ -166,8 +259,6 @@ bool disk_usage_app_balance_policy::copy_secondary(const std::shared_ptr<app_sta
         app, apps, nodes, address_vec, address_id, replicas_low);
     return operation->start(_migration_result);
 }
-
-
 
 bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state> &app,bool still_have_less_than_average){
     node_mapper &nodes = *(_global_view->nodes);
@@ -367,6 +458,7 @@ bool copy_primary_operation_by_disk::can_continue()
     }
 
     int id_max = *_ordered_address_by_disk.rbegin();
+
     //todo: 6657是平衡阈值的代写
     if (!_have_lower_than_average && _disk_usage[id_max] - _disk_usage[id_min] <= 6657) {
        LOG_DEBUG("{}: stop the copy due to the primary will be balanced later.",

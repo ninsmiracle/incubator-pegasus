@@ -83,6 +83,8 @@ private:
 
     std::unique_ptr<load_balance_policy> _app_balance_policy;
     std::unique_ptr<load_balance_policy> _cluster_balance_policy;
+    std::unique_ptr<load_balance_policy> _disk_usage_app_balance_policy;
+
 
     std::unique_ptr<command_deregister> _get_balance_operation_count;
 

@@ -54,6 +54,8 @@ class meta_service;
 
 DSN_DEFINE_bool(meta_server, balance_cluster, false, "whether to enable cluster balancer");
 DSN_TAG_VARIABLE(balance_cluster, FT_MUTABLE);
+DSN_DEFINE_bool(meta_server, balance_by_disk, false, "whether to do balance by disk usage");
+DSN_TAG_VARIABLE(balance_by_disk, FT_MUTABLE);
 
 DSN_DECLARE_uint64(min_live_node_count_for_unfreeze);
 
@@ -187,11 +189,17 @@ void greedy_load_balancer::greedy_balancer(const bool balance_checker)
     }
 
     load_balance_policy *balance_policy = nullptr;
-    if (!FLAGS_balance_cluster) {
-        balance_policy = _app_balance_policy.get();
-    } else if (!balance_checker) {
-        balance_policy = _cluster_balance_policy.get();
+
+    if(FLAGS_balance_by_disk){
+        balance_policy = _disk_usage_app_balance_policy.get();
+    }else{
+        if (!FLAGS_balance_cluster) {
+            balance_policy = _app_balance_policy.get();
+        } else if (!balance_checker) {
+            balance_policy = _cluster_balance_policy.get();
+        }
     }
+
     if (balance_policy != nullptr) {
         balance_policy->balance(balance_checker, t_global_view, t_migration_result);
     }
