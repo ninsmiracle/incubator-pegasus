@@ -17,77 +17,71 @@
 
 #include "disk_usage_app_balance_policy.h"
 #include "greedy_load_balancer.h"
+#include "utils/string_conv.h"
 
-#include <dsn/tool-api/command_manager.h>
-#include <dsn/dist/fmt_logging.h>
-#include <dsn/utility/fail_point.h>
+#include <utils/command_manager.h>
+#include <utils/fmt_logging.h>
+#include <utils/fail_point.h>
 
 namespace dsn {
 namespace replication {
-DSN_DEFINE_bool(meta_server, balancer_in_turn, false, "balance the apps one-by-one/concurrently");
-DSN_DEFINE_bool(meta_server, only_primary_balancer, false, "only try to make the primary balanced");
-DSN_DEFINE_bool(meta_server,
-                only_move_primary,
-                false,
-                "only try to make the primary balanced by move");
+
+DSN_DECLARE_bool(balancer_in_turn);
+DSN_DECLARE_bool(only_primary_balancer);
+DSN_DECLARE_bool(only_move_primary);
 
 DSN_DECLARE_uint64(min_live_node_count_for_unfreeze);
-DSN_DECLARE_uint64(balance_threshold);
 
-const std::string &get_disk_tag(const app_mapper &apps, const rpc_address &node, const gpid &pid)
-{
-    const config_context &cc = *get_config_context(apps, pid);
-    auto iter = cc.find_from_serving(node);
-    CHECK(iter != cc.serving.end(),
-            "can't find disk tag of gpid(%d.%d) for %s",
-            pid.get_app_id(),
-            pid.get_partition_index(),
-            node.to_string());
-    return iter->disk_tag;
-}
+DSN_DEFINE_uint64(meta_server,
+                  balance_threshold,
+                   20,
+                   "control the disk usage balance threshold to continue or finish balance policy,<number MB>");
 
 
-bool calc_disk_usage(node_mapper &nodes,
-                    const app_mapper &apps,
-                     replica_disk_usage_mapper &replicas,
-                    app_id id,
-                    const rpc_address &node,
-                    bool only_primary,
-                    /*out*/ std::map<rpc_address,int> &disk_usage)
-{
-    disk_usage.clear();
-    const node_state *ns = get_node_state(nodes, node, false);
-    CHECK(ns != nullptr, "can't find node(%s) from node_state", node.to_string());
-
-    auto add_one_replica_to_disk_usage = [&](const gpid &pid) {
-        LOG_INFO("add gpid(%d.%d) to node(%s) disk usage",
-              pid.get_app_id(),
-              pid.get_partition_index(),
-              node.to_string());
-        const config_context &cc = *get_config_context(apps, pid);
-
-        auto iter = cc.find_from_serving(node);
-        if (iter == cc.serving.end()) {
-            LOG_WARNING("can't collect gpid(%d.%d)'s info from %s, which should be primary",
-                  pid.get_app_id(),
-                  pid.get_partition_index(),
-                  node.to_string());
-            return false;
-        } else {
-            //node_addr -> disk_usage
-            disk_usage[iter->node] += replicas[iter->node][pid];
-            return true;
-        }
-    };
-
-    if (only_primary) {
-        bool result = ns->for_each_primary(id, add_one_replica_to_disk_usage);
-        return result;
-    } else {
-        bool result = ns->for_each_partition(id, add_one_replica_to_disk_usage);
-        return result;
-    }
-}
+//bool calculate_disk_usage(node_mapper &nodes,
+//                    const app_mapper &apps,
+//                     replica_disk_usage_mapper &replicas,
+//                    app_id id,
+//                    bool only_primary,
+//                    /*out*/ std::map<rpc_address,int> &disk_usage)
+//{
+//    disk_usage.clear();
+//    for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
+//        const rpc_address node = iter->first;
+//        const node_state *ns = get_node_state(nodes, node, false);
+//        CHECK(ns != nullptr, "can't find node(%s) from node_state", node.to_string());
+//
+//        auto add_one_replica_to_disk_usage = [&](const gpid &pid) {
+//            LOG_INFO("add gpid(%d.%d) to node(%s) disk usage",
+//                     pid.get_app_id(),
+//                     pid.get_partition_index(),
+//                     node.to_string());
+//            const config_context &cc = *get_config_context(apps, pid);
+//
+//            auto iter = cc.find_from_serving(node);
+//            if (iter == cc.serving.end()) {
+//                LOG_WARNING("can't collect gpid(%d.%d)'s info from %s, which should be primary",
+//                            pid.get_app_id(),
+//                            pid.get_partition_index(),
+//                            node.to_string());
+//                return false;
+//            } else {
+//                // node_addr -> disk_usage
+//                disk_usage[iter->node] += replicas[iter->node][pid];
+//                LOG_DEBUG("calculate disk usage:now iter is {},node is {}",iter->node,node);
+//                return true;
+//            }
+//        };
+//
+//        if (only_primary) {
+//            bool result = ns->for_each_primary(id, add_one_replica_to_disk_usage);
+//            return result;
+//        } else {
+//            bool result = ns->for_each_partition(id, add_one_replica_to_disk_usage);
+//            return result;
+//        }
+//    }
+//}
 
 //const meta_view *global_view
 int get_min_replica_disk_usage(const meta_view *global_view){
@@ -102,6 +96,8 @@ int get_min_replica_disk_usage(const meta_view *global_view){
 
     return min_replica_usage;
 }
+
+
 
 std::string disk_usage_app_balance_policy::ctrl_assgin_balance_threshold(const std::vector<std::string> &args){
     std::string result("OK");
@@ -180,13 +176,12 @@ bool disk_usage_app_balance_policy::init(const dsn::replication::meta_view *glob
     //阈值赋值
     _min_replica_disk_usage = get_min_replica_disk_usage(global_view);
     if(_min_replica_disk_usage > _balance_threshold){
-        LOG_DEBUG("Balance threshold is not larger than min replica disk usage,adjust it.");
+        LOG_WARNING("Balance threshold is not larger than min replica disk usage,need to adjust it.");
         return false;
     }
 
     return true;
 }
-
 
 void disk_usage_app_balance_policy::balance(bool checker, const meta_view *global_view, migration_list *list)
 {
@@ -199,7 +194,6 @@ void disk_usage_app_balance_policy::balance(bool checker, const meta_view *globa
                          checker,
                          _balancer_in_turn,
                          _only_move_primary,
-                         //todo:在这里primary_balance可能要重写，这里的多态不知道是否起作用
                          std::bind(&disk_usage_app_balance_policy::primary_balance,
                                    this,
                                    std::placeholders::_1,
@@ -221,7 +215,53 @@ void disk_usage_app_balance_policy::balance(bool checker, const meta_view *globa
                               std::placeholders::_2));
 }
 
-//没改
+bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( const std::shared_ptr<app_state> &app,node_mapper nodes,replica_disk_usage_mapper replicas){
+    //todo:考虑磁盘平衡阈值  控制 can_continue 因为磁盘负载均衡没有走最大流图了，所以需要有这个方法
+    int total_primary_disk_usage_of_this_app = 0;
+    std::vector<int> disk_usage_by_nodes;
+    for(auto gpid_map_it : replicas){
+        rpc_address addr = gpid_map_it.first;
+        int nodes_sum = 0;
+        //get all primary
+        partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
+        for(auto iter : gpid_map_it.second){
+            //current gpid in primary_set
+            if (primary_set->count(iter.first)){
+                total_primary_disk_usage_of_this_app += iter.second;
+            }
+            nodes_sum += iter.second;
+        }
+
+        disk_usage_by_nodes.emplace_back(nodes_sum);
+    }
+
+    int expect_replicas_disk_usage_low = total_primary_disk_usage_of_this_app / nodes.size();
+    //int lower_count = 0;
+    for (int i = 0; i < disk_usage_by_nodes.size(); i++) {
+        if(disk_usage_by_nodes[i] < expect_replicas_disk_usage_low){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool disk_usage_app_balance_policy::primary_balance(const std::shared_ptr<app_state> &app,
+                                          bool only_move_primary)
+{
+    ///切角色对磁盘负载似乎没有作用
+    //move primary is useless for disk usage
+    LOG_INFO("begin copy primary to make disk usage balance");
+    if (!only_move_primary) {
+        ///原始逻辑中，第二个参数graph->have_less_than_average() 决定了 have_less_than_average ，间接决定了 can_continue,实际就是查看是否还有节点小于期望值
+        return copy_primary(app, still_have_replicas_lower_than_avreage(app,*_global_view->nodes,*_global_view->replicas));
+    } else {
+            LOG_INFO("stop to copy primary for app({}) coz it is disabled", app->get_logname());
+            return true;
+    }
+}
+
+///标记位检查，没改 后续可提到基类中
 bool disk_usage_app_balance_policy::need_balance_secondaries(bool balance_checker)
 {
     if (!balance_checker && !_migration_result->empty()) {
@@ -254,9 +294,8 @@ bool disk_usage_app_balance_policy::copy_secondary(const std::shared_ptr<app_sta
 
     int replicas_low = total_disk_usage_of_this_app / _alive_nodes;
 
-    //todo:优雅实现copy_secondary_operation_by_disk类
     std::unique_ptr<copy_replica_operation> operation = std::make_unique<copy_secondary_operation_by_disk>(
-        app, apps, nodes, address_vec, address_id, replicas_low);
+        app, apps, nodes, replicas,disks,address_vec, address_id, replicas_low,_balance_threshold);
     return operation->start(_migration_result);
 }
 
@@ -265,28 +304,29 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
     const app_mapper &apps = *_global_view->apps;
     replica_disk_usage_mapper &replicas = *_global_view->replicas;
     disk_total_usage_mapper &disks =  *_global_view->disks;
-    //get all replica disk usage of current app
-    int total_disk_usage_of_this_app = 0;
+    //get Primary disk usage
+    int total_primary_disk_usage_of_this_app = 0;
     for(auto gpid_map_it : replicas){
+        rpc_address addr = gpid_map_it.first;
+        //get all primary
+        partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
         for(auto iter : gpid_map_it.second){
-            if (iter.first.get_app_id() == app->app_id){
-                total_disk_usage_of_this_app += iter.second;
+            //current gpid in primary_set
+            if (primary_set->count(iter.first)){
+                total_primary_disk_usage_of_this_app += iter.second;
             }
         }
     }
 
-    int replicas_low = total_disk_usage_of_this_app / _alive_nodes;
+    LOG_DEBUG("Before try to copy primary ,the total Primary disk usage of app{} with app_id{} is {}MB",app->app_name,app->app_id,total_primary_disk_usage_of_this_app);
+    int primary_disk_replicas_low = total_primary_disk_usage_of_this_app / _alive_nodes;
+    LOG_DEBUG("copy_primary: primary_disk_replicas_low is {}",primary_disk_replicas_low);
+
 
     std::unique_ptr<copy_replica_operation> operation = std::make_unique<copy_primary_operation_by_disk>(
-        app, apps, nodes,replicas,disks, address_vec, address_id, still_have_less_than_average, replicas_low);
+        app, apps, nodes,replicas,disks, address_vec, address_id, still_have_less_than_average, primary_disk_replicas_low,_balance_threshold);
     return operation->start(_migration_result);
 }
-
-
-
-
-
-
 
 
 copy_operation_by_disk::copy_operation_by_disk(const std::shared_ptr<app_state> app,
@@ -297,13 +337,15 @@ copy_operation_by_disk::copy_operation_by_disk(const std::shared_ptr<app_state> 
                                                                      const std::vector<dsn::rpc_address> &address_vec,
                                                                      const std::unordered_map<dsn::rpc_address, int> &address_id,
                                                                      int replicas_low)
-    : _app(app), _apps(apps), _nodes(nodes), _address_vec(address_vec), _address_id(address_id),_replicas(replicas),_disks(disks)
+    : copy_replica_operation(app,apps,nodes,address_vec,address_id),_replicas(replicas),_disks(disks)
 {
 }
 
 bool copy_operation_by_disk::start(migration_list *result)
 {
+    //calculate_disk_usage(_nodes,_apps,_replicas,_app->app_id,only_copy_primary(),/*out*/ _disk_usage);
     init_ordered_address_by_disk();
+
 
     while (true) {
         if (!can_continue()) {
@@ -320,25 +362,18 @@ bool copy_operation_by_disk::start(migration_list *result)
     return true;
 }
 
-int copy_operation_by_disk::get_node_disk_usage(const dsn::replication::node_state &ns) const
-{
-    int app_relica_disk_usage = 0;
-    for(auto iter : _replicas.at(ns.addr())){
-        if(iter.first.get_app_id() == _app->app_id){
-            app_relica_disk_usage += iter.second;
-        }
-    }
-    return app_relica_disk_usage;
-}
-
 
 void copy_operation_by_disk::init_ordered_address_by_disk()
 {
+    LOG_DEBUG("gns,debug begin");
+    //init _disk_usage
     _disk_usage.resize(_address_vec.size(), 0);
     for (const auto &iter : _nodes) {
         auto id = _address_id.at(iter.first);
         _disk_usage[id] = get_node_disk_usage(iter.second);
+        LOG_DEBUG("gns,now id is {} disk {}",id,_disk_usage[id]);
     }
+    LOG_DEBUG("gns,get_node_disk_usage is ok");
 
     std::set<int, std::function<bool(int left, int right)>> ordered_queue(
         [this](int left, int right) {
@@ -350,31 +385,65 @@ void copy_operation_by_disk::init_ordered_address_by_disk()
         auto id = _address_id.at(iter.first);
         ordered_queue.insert(id);
     }
+    LOG_DEBUG("gns,ordered_queue is ok");
+
     _ordered_address_by_disk.swap(ordered_queue);
+    LOG_DEBUG("gns,init_ordered_address_by_disk is ok");
 }
 
+void copy_operation_by_disk::copy_once(gpid selected_pid, migration_list *result)
+{
+    auto from = _address_vec[*_ordered_address_by_disk.rbegin()];
+    auto to = _address_vec[*_ordered_address_by_disk.begin()];
+
+    auto pc = _app->partitions[selected_pid.get_partition_index()];
+    auto request = generate_balancer_request(_apps, pc, get_balance_type(), from, to);
+    result->emplace(selected_pid, request);
+}
+
+//todo: _replicas似乎也要更新
 void copy_operation_by_disk::update_ordered_address_by_disk(dsn::gpid selected_gpid)
 {
     int id_min = *_ordered_address_by_disk.begin();
     int id_max = *_ordered_address_by_disk.rbegin();
-    auto from = _address_vec[id_max];
-    int gpid_disk = _replicas[from][selected_gpid];
 
+    auto from = _address_vec[id_max];
+    auto to = _address_vec[id_min];
+
+    int gpid_disk = _replicas[from][selected_gpid];
     _disk_usage[id_max] -= gpid_disk;
     _disk_usage[id_min] += gpid_disk;
 
+    //delect and insert,to reorder
     _ordered_address_by_disk.erase(_ordered_address_by_disk.begin());
     _ordered_address_by_disk.erase(--_ordered_address_by_disk.end());
-
     _ordered_address_by_disk.insert(id_max);
     _ordered_address_by_disk.insert(id_min);
+
+
+    //update _replicas
+    _replicas[from].erase(selected_gpid);
+    _replicas[to].insert({selected_gpid,gpid_disk});
+
+    //update_total_disks
+    //std::string disk_tag = get_disk_tag(_apps,from,selected_gpid);
+    //_disks[from].erase(selected_gpid);
+
+}
+
+//get all partitions from max disk usage load node
+const partition_set *copy_operation_by_disk::get_all_partitions(){
+    int id_max = *_ordered_address_by_disk.rbegin();
+    const node_state &ns = _nodes.find(_address_vec[id_max])->second;
+    const partition_set *partitions = ns.partitions(_app->app_id, only_copy_primary());
+    return partitions;
 }
 
 gpid copy_operation_by_disk::select_partition(migration_list *result)
 {
     const partition_set *partitions = get_all_partitions();
 
-    int id_max = *_ordered_address_ids.rbegin();
+    int id_max = *_ordered_address_by_disk.rbegin();
     const node_state &ns = _nodes.find(_address_vec[id_max])->second;
     CHECK(partitions != nullptr && !partitions->empty(),
               "max load({}) shouldn't empty",
@@ -398,29 +467,52 @@ std::string copy_operation_by_disk::get_max_load_disk(dsn::rpc_address addr)
     return max_disk_tag;
 }
 
+///partitions入参时就已经完成了primary或secondary的分类过滤
 dsn::gpid copy_operation_by_disk::select_max_load_gpid(const partition_set *partitions,migration_list *result)
 {
     int id_max = *_ordered_address_by_disk.rbegin();
     const node_state &ns = _nodes.find(_address_vec[id_max])->second;
-    std::string max_disk_tag = get_max_load_disk(ns.addr());
+    ///如果考虑真实磁盘用量，最大真实用量的磁盘上可能没有当前表的分片，故这里不考虑真实用量
+    //std::string max_disk_tag = get_max_load_disk(ns.addr());
 
+    int expectation_residual = _disk_usage[id_max] - _replicas_low;
     int max_replica_disk_usage = -1;
     gpid selected_pid(-1, -1);
+        //find a largest partition in max load node
+        //if only_primary is ture, partition_set only contain primary replica
     for (const gpid &pid : *partitions) {
         if (!can_select(pid, result)) {
             continue;
         }
 
-        const std::string &disk_tag = get_disk_tag(_apps, _address_vec[id_max], pid);
         int cur_replica_disk_usage = _replicas[ns.addr()][pid];
-        //this gpid is in max load disk && chose the max load replica on max load disk
-        if(disk_tag == max_disk_tag && cur_replica_disk_usage > max_replica_disk_usage){
+        if(cur_replica_disk_usage > max_replica_disk_usage && cur_replica_disk_usage <= expectation_residual){
             max_replica_disk_usage = cur_replica_disk_usage;
             selected_pid = pid;
         }
     }
+    LOG_DEBUG("max node disk usage is {},replicas_low {}",_disk_usage[id_max],_replicas_low);
 
     return selected_pid;
+}
+
+dsn::gpid copy_operation_by_disk::get_max_replica_disk_usage_smaller_than_expectation_residual(dsn::rpc_address addr,int expectation_residual,bool only_primary)
+{
+    int max_smaller_than_expectation_residual = -1;
+    dsn::gpid res_gpid(-1,-1);
+    //get all primary or all replica
+    partition_set * primary_set = _nodes[addr].partitions(_app->app_id,only_primary);
+    for(auto iter : _replicas[addr]){
+        //current gpid in primary_set
+        if (primary_set->count(iter.first)){
+            if(iter.second <= expectation_residual && iter.second > max_smaller_than_expectation_residual ){
+                max_smaller_than_expectation_residual = iter.second;
+                res_gpid = iter.first;
+            }
+        }
+    }
+
+    return res_gpid;
 }
 
 
@@ -432,25 +524,38 @@ copy_primary_operation_by_disk::copy_primary_operation_by_disk(const std::shared
                                                                const std::vector<dsn::rpc_address> &address_vec,
                                                                const std::unordered_map<dsn::rpc_address, int> &address_id,
                                                                bool have_lower_than_average,
-                                                               int replicas_low)
+                                                               int replicas_low,
+                                                               int balance_threshold)
     : copy_operation_by_disk(app, apps, nodes, replicas,disks,address_vec, address_id,replicas_low)
 {
     _have_lower_than_average = have_lower_than_average;
     _replicas_low = replicas_low;
+    _disk_usage_balance_threshold = balance_threshold;
 }
-
-
-
 
 
 bool copy_primary_operation_by_disk::can_select(gpid pid, migration_list *result)
 {
+    //target node already have a member of this gpid
+    int id_min = *_ordered_address_by_disk.begin();
+    const node_state &min_ns = _nodes.at(_address_vec[id_min]);
+    if (min_ns.served_as(pid) != partition_status::PS_INACTIVE) {
+        LOG_DEBUG("{}: skip gpid({}.{}) coz it is already a member on the target node",
+                  _app->get_logname(),
+                  pid.get_app_id(),
+                  pid.get_partition_index());
+        return false;
+    }
+
+
     return pid.get_app_id() == _app->app_id && result->find(pid) == result->end();
 }
+
 
 bool copy_primary_operation_by_disk::can_continue()
 {
     int id_min = *_ordered_address_by_disk.begin();
+    //_replicas_low is Mathematical Expectation
     if (_have_lower_than_average && _disk_usage[id_min] >= _replicas_low) {
        LOG_DEBUG("{}: stop the copy due to primaries on all nodes will reach low later.",
                 _app->get_logname());
@@ -459,29 +564,140 @@ bool copy_primary_operation_by_disk::can_continue()
 
     int id_max = *_ordered_address_by_disk.rbegin();
 
-    //todo: 6657是平衡阈值的代写
-    if (!_have_lower_than_average && _disk_usage[id_max] - _disk_usage[id_min] <= 6657) {
-       LOG_DEBUG("{}: stop the copy due to the primary will be balanced later.",
+    //when skew of every replica is smaller than threshold,do not do balance continue
+    if (_disk_usage[id_max] - _disk_usage[id_min] <= _disk_usage_balance_threshold) {
+       LOG_DEBUG("{}: stop the copy due to the primary skew between every replica is smaller than balance threshold.",
                 _app->get_logname());
+       return false;
+    }
+
+    int expectation_residual = _disk_usage[id_max] - _replicas_low;
+    LOG_DEBUG("In disk usage app balance policy,next step will copy at most {}MB in expectation,max disk usage node is {},replicas_low is {}",expectation_residual,_disk_usage[id_max],_replicas_low);
+
+    gpid res_gpid = get_max_replica_disk_usage_smaller_than_expectation_residual(_address_vec[id_max],expectation_residual, true);
+    //can not choose any replica in max disk load node in next step
+    if(res_gpid.get_partition_index() < 0){
+       LOG_DEBUG("In disk usage app balance policy,can not find a gpid which is smaller than expectation residual.");
+       return false;
+    }
+    int max_disk_usage_smaller_than_expectation_residual = _replicas[_address_vec[id_max]][res_gpid];
+    LOG_DEBUG("In disk usage app balance policy,max_disk_usage_smaller_than_expectation_residual is {}",max_disk_usage_smaller_than_expectation_residual);
+
+    return true;
+}
+
+int copy_primary_operation_by_disk::get_node_disk_usage(const dsn::replication::node_state &ns) const
+{
+    LOG_DEBUG("gns,get_node_disk_usage begin.");
+    int app_relica_disk_usage = 0;
+
+    if(_app == nullptr){
+       LOG_ERROR("Something is wrong.Input app is null");
+    }
+
+    const partition_set * primary_set = ns.partitions(_app->app_id,true);
+    if(nullptr == primary_set || primary_set->empty()){
+       LOG_DEBUG("gns,get_node_disk_usage get primary set is null or empty, addr is {}.",ns.addr());
+       return 0;
+    }
+
+    for(auto iter : _replicas.at(ns.addr())){
+       LOG_DEBUG("gns,get_node_disk_usage replicas has addr {}.",ns.addr());
+       if(primary_set->count(iter.first)){
+            app_relica_disk_usage += iter.second;
+       }
+    }
+    return app_relica_disk_usage;
+}
+
+
+
+balance_type copy_primary_operation_by_disk::get_balance_type() { return balance_type::COPY_PRIMARY; }
+
+
+copy_secondary_operation_by_disk::copy_secondary_operation_by_disk(  const std::shared_ptr<app_state> app,
+                                                                   const app_mapper &apps,
+                                                                   node_mapper &nodes,
+                                                                   const replica_disk_usage_mapper &replicas,
+                                                                   const disk_total_usage_mapper &disks,
+                                                                   const std::vector<dsn::rpc_address> &address_vec,
+                                                                   const std::unordered_map<dsn::rpc_address, int> &address_id,
+                                                                   int replicas_low,
+                                                                   int balance_threshold)
+    : copy_operation_by_disk(app, apps, nodes,replicas,disks, address_vec, address_id,replicas_low), _replicas_low(replicas_low),_disk_usage_balance_threshold(balance_threshold)
+{
+};
+
+bool copy_secondary_operation_by_disk::can_continue()
+{
+    int id_min = *_ordered_address_by_disk.begin();
+    int id_max = *_ordered_address_by_disk.rbegin();
+    if (_disk_usage[id_max] <= _replicas_low ||
+        _disk_usage[id_max] - _disk_usage[id_min] <= _disk_usage_balance_threshold) {
+       LOG_INFO("{}: stop copy secondary coz it will be balanced by disk usage later", _app->get_logname());
+       return false;
+    }
+
+    int expectation_residual = _disk_usage[id_max] - _replicas_low;
+    gpid res_gpid = get_max_replica_disk_usage_smaller_than_expectation_residual(_address_vec[id_max],expectation_residual, false);
+    //can not choose any replica in max disk load node in next step
+    if(res_gpid.get_partition_index() < 0){
+       return false;
+    }
+    int max_disk_usage_smaller_than_expectation_residual = _replicas[_address_vec[id_max]][res_gpid];
+    LOG_DEBUG("In disk usage app balance policy,max_disk_usage_smaller_than_expectation_residual is {}",max_disk_usage_smaller_than_expectation_residual);
+
+    return true;
+}
+
+bool copy_secondary_operation_by_disk::can_select(dsn::gpid pid, dsn::replication::migration_list *result)
+{
+    if(pid.get_app_id() != _app->app_id){
+       return false;
+    }
+    int id_max = *_ordered_address_by_disk.rbegin();
+    const node_state &max_ns = _nodes.at(_address_vec[id_max]);
+    if (max_ns.served_as(pid) == partition_status::PS_PRIMARY) {
+       LOG_DEBUG("{}: do disk usage balance, skip gpid({}.{}) coz it is primary",
+                 _app->get_logname(),
+                 pid.get_app_id(),
+                 pid.get_partition_index());
+       return false;
+    }
+
+    // if the pid has been used
+    if (result->find(pid) != result->end()) {
+       LOG_DEBUG("{}: do disk usage balance, skip gpid({}.{}) coz it is already copyed",
+                 _app->get_logname(),
+                 pid.get_app_id(),
+                 pid.get_partition_index());
+       return false;
+    }
+
+    int id_min = *_ordered_address_by_disk.begin();
+    const node_state &min_ns = _nodes.at(_address_vec[id_min]);
+    if (min_ns.served_as(pid) != partition_status::PS_INACTIVE) {
+       LOG_DEBUG("{}: skip gpid({}.{}) coz it is already a member on the target node",
+                 _app->get_logname(),
+                 pid.get_app_id(),
+                 pid.get_partition_index());
        return false;
     }
     return true;
 }
 
+int copy_secondary_operation_by_disk::get_node_disk_usage(const dsn::replication::node_state &ns) const
+{
+    int app_relica_disk_usage = 0;
+    for(auto iter : _replicas.at(ns.addr())){
+       if(iter.first.get_app_id() == _app->app_id){
+            app_relica_disk_usage += iter.second;
+       }
+    }
+    return app_relica_disk_usage;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+balance_type copy_secondary_operation_by_disk::get_balance_type() { return balance_type::COPY_SECONDARY; }
 
 
 

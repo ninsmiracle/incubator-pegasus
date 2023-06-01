@@ -585,12 +585,17 @@ const partition_set *node_state::get_partitions(int app_id, bool only_primary) c
         all_partitions = &app_primaries;
     else
         all_partitions = &app_partitions;
+    LOG_DEBUG("find appid is {}",app_id);
 
     auto iter = all_partitions->find(app_id);
-    if (iter == all_partitions->end())
+    if (iter == all_partitions->end()){
+        LOG_DEBUG("gns,get_partitions return a nullptr.");
         return nullptr;
-    else
+    }else{
+        LOG_DEBUG("gns,get_partitions return a non null ptr.");
         return &(iter->second);
+    }
+
 }
 
 partition_set *node_state::get_partitions(app_id id, bool only_primary, bool create_new)
@@ -605,10 +610,11 @@ partition_set *node_state::get_partitions(app_id id, bool only_primary, bool cre
         return &((*all_partitions)[id]);
     } else {
         auto iter = all_partitions->find(id);
-        if (iter == all_partitions->end())
+        if (iter == all_partitions->end()){
             return nullptr;
-        else
+        }else{
             return &(iter->second);
+        }
     }
 }
 
@@ -626,11 +632,18 @@ void node_state::put_partition(const gpid &pid, bool is_primary)
 {
     partition_set *all = get_partitions(pid.get_app_id(), false, true);
     if ((all->insert(pid)).second)
+    {
         total_partitions++;
+        LOG_DEBUG("gns,put_partition now partition_set ALL size is {},pid is {}.",all->size(),pid.get_partition_index());
+    }
+
     if (is_primary) {
         partition_set *pri = get_partitions(pid.get_app_id(), true, true);
-        if ((pri->insert(pid)).second)
+
+        if ((pri->insert(pid)).second){
             total_primaries++;
+            LOG_DEBUG("gns,put_partition now partition_set PRI size is {},pid is {}.",all->size(),pid.get_partition_index());
+        }
     }
 }
 

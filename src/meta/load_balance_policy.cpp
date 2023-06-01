@@ -41,6 +41,13 @@ namespace dsn {
 namespace replication {
 DSN_DECLARE_uint64(min_live_node_count_for_unfreeze);
 
+DSN_DEFINE_bool(meta_server, balancer_in_turn, false, "balance the apps one-by-one/concurrently");
+DSN_DEFINE_bool(meta_server, only_primary_balancer, false, "only try to make the primary balanced");
+DSN_DEFINE_bool(meta_server,
+                only_move_primary,
+                false,
+                "only try to make the primary balanced by move");
+
 void dump_disk_load(app_id id, const rpc_address &node, bool only_primary, const disk_load &load)
 {
     std::ostringstream load_string;

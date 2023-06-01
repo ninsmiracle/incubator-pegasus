@@ -434,17 +434,17 @@ function run_test()
           restore_test
           throttle_test
         )
-        if [[ "${need_onebox_tests[@]}" =~ "${test_modules}" ]]; then
+        if [[ "${need_onebox_tests[@]}" =~ "${modules}" ]]; then
             run_clear_onebox
             m_count=3
-            if [ "${test_modules}" == "recovery_test" ]; then
+            if [ "${modules}" == "recovery_test" ]; then
                 m_count=1
                 opts="meta_state_service_type=meta_state_service_simple,distributed_lock_service_type=distributed_lock_service_simple"
             fi
-            if [ "${test_modules}" == "backup_restore_test" ]; then
+            if [ "${modules}" == "backup_restore_test" ]; then
                 opts="cold_backup_disabled=false,cold_backup_checkpoint_reserve_minutes=0,cold_backup_root=onebox"
             fi
-            if [ "${test_modules}" == "restore_test" ]; then
+            if [ "${modules}" == "restore_test" ]; then
                 opts="cold_backup_disabled=false,cold_backup_checkpoint_reserve_minutes=0,cold_backup_root=mycluster"
             fi
             if ! run_start_onebox -m ${m_count} -w -c --opts ${opts}; then
@@ -464,7 +464,7 @@ function run_test()
             exit 1
         fi
         # clear onebox if needed
-        if [[ "${need_onebox_tests[@]}"  =~ "${test_modules}" ]]; then
+        if [[ "${need_onebox_tests[@]}"  =~ "${modules}" ]]; then
             if [ "$clear_flags" == "1" ]; then
                 run_clear_onebox
             fi

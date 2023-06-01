@@ -43,9 +43,14 @@ public:
     bool init(const dsn::replication::meta_view *global_view, dsn::replication::migration_list *list);
 
 private:
+    bool primary_balance(const std::shared_ptr<app_state> &app,
+                                              bool only_move_primary);
     bool need_balance_secondaries(bool balance_checker);
     bool copy_primary(const std::shared_ptr<app_state> &app,bool still_have_less_than_average);
     bool copy_secondary(const std::shared_ptr<app_state> &app, bool place_holder);
+
+    bool still_have_replicas_lower_than_avreage( const std::shared_ptr<app_state> &app,node_mapper nodes,replica_disk_usage_mapper replicas);
+
 
     std::vector<std::unique_ptr<command_deregister>> _cmds;
 
@@ -59,7 +64,6 @@ private:
     //new add
     int _balance_threshold;
     int _min_replica_disk_usage;
-
 };
 
 class copy_operation_by_disk : public copy_replica_operation
@@ -77,24 +81,28 @@ public:
 
     bool start(migration_list *result);
     void init_ordered_address_by_disk();
+    void copy_once(gpid selected_pid, migration_list *result);
     void update_ordered_address_by_disk(dsn::gpid selected_gpid);
+    const partition_set* get_all_partitions();
     dsn::gpid select_partition(migration_list *result);
     std::string get_max_load_disk(dsn::rpc_address addr);
     dsn::gpid select_max_load_gpid(const partition_set *partitions,migration_list *result);
-    int get_node_disk_usage(const node_state &ns) const;
 
+    virtual int get_node_disk_usage(const node_state &ns) const = 0;
+    dsn::gpid  get_max_replica_disk_usage_smaller_than_expectation_residual(dsn::rpc_address addr,int expectation_residual,bool only_primary);
 
-    int get_partition_count(const node_state &ns) const{}; //无用的纯虚函数实现
+    int get_partition_count(const node_state &ns) const{return 0;}; //无用的纯虚函数实现
 
 protected:
-    virtual int get_disk_usage(const node_state &ns) const = 0;
+    //virtual int get_disk_usage(const node_state &ns) const = 0;
 
     std::vector<int> _disk_usage;
     std::set<int, std::function<bool(int left, int right)>> _ordered_address_by_disk;
     replica_disk_usage_mapper _replicas;
     disk_total_usage_mapper _disks;
+    int _replicas_low;
 
-    FRIEND_TEST(copy_secondary_operation, misc);
+    FRIEND_TEST(copy_operation_by_disk, misc);
 };
 
 
@@ -109,24 +117,57 @@ public:
                            const std::vector<dsn::rpc_address> &address_vec,
                            const std::unordered_map<dsn::rpc_address, int> &address_id,
                            bool have_lower_than_average,
-                           int replicas_low);
+                           int replicas_low,
+                                   int balance_threshold);
     ~copy_primary_operation_by_disk() = default;
 
 private:
-    int get_disk_usage(const node_state &ns) const;
-
     bool only_copy_primary() { return true; }
     bool can_select(gpid pid, migration_list *result);
     bool can_continue();
+    int get_node_disk_usage(const dsn::replication::node_state &ns) const;
+
     enum balance_type get_balance_type();
+
 
     bool _have_lower_than_average;
     int _replicas_low;
+    int _disk_usage_balance_threshold;
 
+    FRIEND_TEST(copy_primary_operation_by_disk, primary_can_select);
+    FRIEND_TEST(copy_primary_operation_by_disk, only_copy_primary);
+    FRIEND_TEST(copy_primary_operation_by_disk, misc);
 
 };
 
+class copy_secondary_operation_by_disk : public copy_operation_by_disk
+{
+public:
+    copy_secondary_operation_by_disk(const std::shared_ptr<app_state> app,
+                             const app_mapper &apps,
+                             node_mapper &nodes,
+                                     const replica_disk_usage_mapper &replicas,
+                                     const disk_total_usage_mapper &disks,
+                             const std::vector<dsn::rpc_address> &address_vec,
+                             const std::unordered_map<dsn::rpc_address, int> &address_id,
+                             int replicas_low,
+                                     int balance_threshold);
+    ~copy_secondary_operation_by_disk() = default;
 
+private:
+    bool can_continue();
+    bool can_select(gpid pid, migration_list *result);
+    int get_node_disk_usage(const dsn::replication::node_state &ns) const;
+    balance_type get_balance_type();
+    bool only_copy_primary() { return false; }
+
+
+    int _replicas_low;
+    int _disk_usage_balance_threshold;
+
+    FRIEND_TEST(copy_secondary_operation_by_disk, secondary_can_select);
+    FRIEND_TEST(copy_secondary_operation_by_disk, misc);
+};
 
 
 

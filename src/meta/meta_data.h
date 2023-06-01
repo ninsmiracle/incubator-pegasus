@@ -433,6 +433,9 @@ public:
     bool for_each_partition(const std::function<bool(const dsn::gpid &pid)> &f) const;
     bool for_each_partition(app_id id, const std::function<bool(const dsn::gpid &)> &f) const;
     bool for_each_primary(app_id id, const std::function<bool(const dsn::gpid &pid)> &f) const;
+
+    FRIEND_TEST(copy_primary_operation_by_disk, misc);
+    FRIEND_TEST(copy_secondary_operation_by_disk, misc);
 };
 
 typedef std::unordered_map<rpc_address, node_state> node_mapper;
