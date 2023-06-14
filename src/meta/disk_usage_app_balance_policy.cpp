@@ -401,7 +401,6 @@ void copy_operation_by_disk::copy_once(gpid selected_pid, migration_list *result
     result->emplace(selected_pid, request);
 }
 
-//todo: _replicas似乎也要更新
 void copy_operation_by_disk::update_ordered_address_by_disk(dsn::gpid selected_gpid)
 {
     int id_min = *_ordered_address_by_disk.begin();
