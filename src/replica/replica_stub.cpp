@@ -3241,13 +3241,14 @@ void replica_stub::get_local_replica_storages(std::map<dsn::gpid,int32_t> &resul
                 // dsn::utils::filesystem::disk_space_info info;
                 int64_t partition_dir_size;
                 if (!dsn::utils::filesystem::file_size(gpid_path, partition_dir_size)) {
-                    LOG_ERROR("get {} storage failed", gpid_path);
+                    LOG_ERROR("get {} storage failed,skip this replica", gpid_path);
+                    continue;
                     // 暂时设置为失败一个就略过这个失败
                 }
                 int partition_disk_capacity_mb = partition_dir_size / 1024 / 1024;
                 result[pid] = partition_disk_capacity_mb;
 
-                LOG_ERROR("send partition_disk usage to meta server succeed: partition_dir = {},this replica partition_disk_capacity_mb = {}",
+                LOG_INFO("send partition_disk usage to meta server succeed: partition_dir = {},this replica partition_disk_capacity_mb = {}",
                          gpid_path,
                          partition_disk_capacity_mb);
             }
@@ -3264,7 +3265,7 @@ void replica_stub::get_local_replica_storages(std::map<dsn::gpid,int32_t> &resul
         int32_t ssd_total_ssd_space_available = total_info.available / 1024 / 1024;
         //record disk space used
         disk_result[tag] = ssd_total_ssd_space_capacity - ssd_total_ssd_space_available;
-        LOG_ERROR("load disk space to meta server succeed: dir = {}, SSD total capacity_mb = {},available_mb = {}, current ssd =  {} holds replicas num = {}",
+        LOG_INFO("load disk space to meta server succeed: dir = {}, SSD total capacity_mb = {},available_mb = {}, current ssd =  {} holds replicas num = {}",
                  full_dir,
                  ssd_total_ssd_space_capacity,
                  ssd_total_ssd_space_available,

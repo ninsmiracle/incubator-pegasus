@@ -42,6 +42,8 @@ public:
     void balance(bool checker, const meta_view *global_view, migration_list *list) override;
     bool init(const dsn::replication::meta_view *global_view, dsn::replication::migration_list *list);
 
+    //todo: add score() override func to make disk usage balance info can show in pegasus-shell
+
 private:
     bool primary_balance(const std::shared_ptr<app_state> &app,
                                               bool only_move_primary);

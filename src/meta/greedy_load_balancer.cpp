@@ -34,6 +34,7 @@
 
 #include "app_balance_policy.h"
 #include "cluster_balance_policy.h"
+#include "disk_usage_app_balance_policy.h"
 #include "greedy_load_balancer.h"
 #include "meta/load_balance_policy.h"
 #include "meta/server_load_balancer.h"
@@ -45,6 +46,7 @@
 #include "utils/flags.h"
 #include "utils/fmt_logging.h"
 #include "utils/math.h"
+
 
 namespace dsn {
 class gpid;
@@ -61,6 +63,7 @@ DSN_DECLARE_uint64(min_live_node_count_for_unfreeze);
 
 greedy_load_balancer::greedy_load_balancer(meta_service *_svc) : server_load_balancer(_svc)
 {
+    _disk_usage_app_balance_policy = std::make_unique<disk_usage_app_balance_policy>(_svc);
     _app_balance_policy = std::make_unique<app_balance_policy>(_svc);
     _cluster_balance_policy = std::make_unique<cluster_balance_policy>(_svc);
 

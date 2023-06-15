@@ -2630,10 +2630,10 @@ bool server_state::check_all_partitions()
         _meta_svc->get_balancer()->report(_temporary_list, true);
         return false;
     }
-
-    if (_meta_svc->get_balancer()->balance({&_all_apps, &_nodes}, _temporary_list)) {
+    // now meta level is lively
+    if (_meta_svc->get_balancer()->balance({&_all_apps, &_nodes,&_replica_disk,&_disks}, _temporary_list)) {
         LOG_INFO("try to do replica migration");
-        _meta_svc->get_balancer()->apply_balancer({&_all_apps, &_nodes}, _temporary_list);
+        _meta_svc->get_balancer()->apply_balancer({&_all_apps, &_nodes,&_replica_disk,&_disks}, _temporary_list);
         // update balancer action details
         _meta_svc->get_balancer()->report(_temporary_list, false);
         if (_replica_migration_subscriber)
