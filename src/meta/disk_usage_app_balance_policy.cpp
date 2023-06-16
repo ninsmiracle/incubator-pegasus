@@ -131,30 +131,7 @@ disk_usage_app_balance_policy::disk_usage_app_balance_policy(meta_service *svc) 
         _only_primary_balancer = false;
         _only_move_primary = false;
     }
-    _cmds.emplace_back(dsn::command_manager::instance().register_command(
-        {"meta.lb.balancer_in_turn"},
-        "meta.lb.balancer_in_turn <true|false>",
-        "control whether do app balancer in turn",
-        [this](const std::vector<std::string> &args) {
-            return remote_command_set_bool_flag(_balancer_in_turn, "lb.balancer_in_turn", args);
-        }));
 
-    _cmds.emplace_back(dsn::command_manager::instance().register_command(
-        {"meta.lb.only_primary_balancer"},
-        "meta.lb.only_primary_balancer <true|false>",
-        "control whether do only primary balancer",
-        [this](const std::vector<std::string> &args) {
-            return remote_command_set_bool_flag(
-                _only_primary_balancer, "lb.only_primary_balancer", args);
-        }));
-
-    _cmds.emplace_back(dsn::command_manager::instance().register_command(
-        {"meta.lb.only_move_primary"},
-        "meta.lb.only_move_primary <true|false>",
-        "control whether only move primary in balancer",
-        [this](const std::vector<std::string> &args) {
-            return remote_command_set_bool_flag(_only_move_primary, "lb.only_move_primary", args);
-        }));
     //register disk balance threshold : meta.lb.disk_balance_threshold
     _cmds.emplace_back(dsn::command_manager::instance().register_command(
         {"meta.lb.disk_balance_threshold"},
