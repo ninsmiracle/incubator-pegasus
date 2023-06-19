@@ -2624,7 +2624,7 @@ bool server_state::check_all_partitions()
     if (level == meta_function_level::fl_steady) {
         LOG_INFO("check if any replica migration can be done when meta server is in level({})",
                  _meta_function_level_VALUES_TO_NAMES.find(level)->second);
-        _meta_svc->get_balancer()->check({&_all_apps, &_nodes}, _temporary_list);
+        _meta_svc->get_balancer()->check({&_all_apps, &_nodes,&_replica_disk,&_disks}, _temporary_list);
         LOG_INFO("balance checker operation count = {}", _temporary_list.size());
         // update balance checker operation count
         _meta_svc->get_balancer()->report(_temporary_list, true);
@@ -2645,7 +2645,7 @@ bool server_state::check_all_partitions()
     }
 
     LOG_INFO("check if any replica migration left");
-    _meta_svc->get_balancer()->check({&_all_apps, &_nodes}, _temporary_list);
+    _meta_svc->get_balancer()->check({&_all_apps, &_nodes,&_replica_disk,&_disks}, _temporary_list);
     LOG_INFO("balance checker operation count = {}", _temporary_list.size());
     // update balance checker operation count
     _meta_svc->get_balancer()->report(_temporary_list, true);
