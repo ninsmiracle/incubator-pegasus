@@ -153,7 +153,7 @@ bool disk_usage_app_balance_policy::init(const dsn::replication::meta_view *glob
     //阈值赋值
     _min_replica_disk_usage = get_min_replica_disk_usage(global_view);
     if(_min_replica_disk_usage > _balance_threshold){
-        LOG_WARNING("Balance threshold is not larger than min replica disk usage,need to adjust it.");
+        LOG_WARNING("Balance threshold {} is not larger than min replica disk usage {},need to adjust it.",_balance_threshold,_min_replica_disk_usage);
         return false;
     }
 
