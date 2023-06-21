@@ -142,7 +142,7 @@ disk_usage_app_balance_policy::disk_usage_app_balance_policy(meta_service *svc) 
         }));
 }
 
-bool disk_usage_app_balance_policy::init(const dsn::replication::meta_view *global_view, dsn::replication::migration_list *list)
+bool disk_usage_app_balance_policy::init(const dsn::replication::meta_view *global_view, dsn::replication::migration_list *list,bool checker)
 {
     _global_view = global_view;
     _migration_result = list;
@@ -151,8 +151,13 @@ bool disk_usage_app_balance_policy::init(const dsn::replication::meta_view *glob
     //number_nodes(nodes);
 
     //阈值赋值
-    _min_replica_disk_usage = get_min_replica_disk_usage(global_view);
+    _min_replica_disk_usage = get_min_replica_disk_usage(_global_view);
     if(_min_replica_disk_usage > _balance_threshold){
+        if(checker){
+            LOG_INFO("Some error happen in checking stage,disk load balance check will not run");
+        }else{
+            LOG_INFO("Some error happen in balance stage,disk load balance can not read disk infomation");
+        }
         LOG_WARNING("Balance threshold {} is not larger than min replica disk usage {},need to adjust it.",_balance_threshold,_min_replica_disk_usage);
         return false;
     }
@@ -163,7 +168,7 @@ bool disk_usage_app_balance_policy::init(const dsn::replication::meta_view *glob
 void disk_usage_app_balance_policy::balance(bool checker, const meta_view *global_view, migration_list *list)
 {
     //when min_replica_disk_usage > balance_threshold will not do balance
-    if(!init(global_view, list)){
+    if(!init(global_view, list,checker)){
         return;
     }
     const app_mapper &apps = *_global_view->apps;

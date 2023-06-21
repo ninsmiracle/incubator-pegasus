@@ -980,11 +980,11 @@ void server_state::on_config_sync(configuration_query_by_node_rpc rpc)
         // handle the disk-replica-storage   aggregate disk_info from replicas
         if(!reject_this_request){
             _replica_disk[request.node] = request.partition_storage;
-            LOG_DEBUG("Meta get disk usage from node {} succeed,this node holds {} replicas",request.node.to_string(),
+            LOG_INFO("Meta get disk usage from node {} succeed,this node holds {} replicas",request.node.to_string(),
                       request.partition_storage.size());
 
             _disks[request.node] = request.disk_storage;
-            LOG_DEBUG("Meta get disk TOTAL usage from node {} succeed",request.node.to_string());
+            LOG_INFO("Meta get disk TOTAL usage from node {} succeed",request.node.to_string());
         }
     }
 
@@ -998,7 +998,7 @@ void server_state::on_config_sync(configuration_query_by_node_rpc rpc)
              response.err,
              response.partitions.size(),
              response.gc_replicas.size());
-}
+ }
 
 bool server_state::query_configuration_by_gpid(dsn::gpid id,
                                                /*out*/ partition_configuration &config)

@@ -40,7 +40,7 @@ public:
     ~disk_usage_app_balance_policy() = default;
 
     void balance(bool checker, const meta_view *global_view, migration_list *list) override;
-    bool init(const dsn::replication::meta_view *global_view, dsn::replication::migration_list *list);
+    bool init(const dsn::replication::meta_view *global_view, dsn::replication::migration_list *list,bool checker);
 
     //todo: add score() override func to make disk usage balance info can show in pegasus-shell
 
