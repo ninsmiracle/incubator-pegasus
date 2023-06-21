@@ -236,7 +236,7 @@ bool disk_usage_app_balance_policy::primary_balance(const std::shared_ptr<app_st
     LOG_INFO("begin copy primary to make disk usage balance");
     if (!only_move_primary) {
         ///原始逻辑中，第二个参数graph->have_less_than_average() 决定了 have_less_than_average ，间接决定了 can_continue,实际就是查看是否还有节点小于期望值
-        return copy_primary(app, still_have_replicas_lower_than_avreage(app,*_global_view->nodes,*_global_view->replicas));
+        return disk_usage_app_balance_policy::copy_primary(app, still_have_replicas_lower_than_avreage(app,*_global_view->nodes,*_global_view->replicas));
     } else {
             LOG_INFO("stop to copy primary for app({}) coz it is disabled", app->get_logname());
             return true;

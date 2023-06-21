@@ -241,6 +241,7 @@ bool load_balance_policy::primary_balance(const std::shared_ptr<app_state> &app,
 bool load_balance_policy::copy_primary(const std::shared_ptr<app_state> &app,
                                        bool still_have_less_than_average)
 {
+    LOG_INFO("copy_primary is in father class");
     node_mapper &nodes = *(_global_view->nodes);
     const app_mapper &apps = *_global_view->apps;
     int replicas_low = app->partition_count / _alive_nodes;
