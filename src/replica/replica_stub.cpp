@@ -3240,7 +3240,7 @@ void replica_stub::get_local_replica_storages(std::map<dsn::gpid,int32_t> &resul
                 std::string gpid_path = replica->dir();
                 // dsn::utils::filesystem::disk_space_info info;
                 int64_t partition_dir_size = 0;
-                if (!dsn::utils::filesystem::file_size(gpid_path, &partition_dir_size)) {
+                if (!dsn::utils::filesystem::file_size(gpid_path, partition_dir_size)) {
                     LOG_ERROR("get {} storage failed,skip this replica", gpid_path);
                     continue;
                     // 暂时设置为失败一个就略过这个失败
