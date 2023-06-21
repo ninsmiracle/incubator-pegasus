@@ -296,7 +296,7 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
         LOG_INFO("gns: addr is {}",addr);
         //get all primary
         partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
-        LOG_INFO("gns: primary size is {}",primary_set.size());
+        LOG_INFO("gns: primary size is {}",primary_set->size());
         for(auto iter : gpid_map_it.second){
             //current gpid in primary_set
             if (primary_set->count(iter.first)){
