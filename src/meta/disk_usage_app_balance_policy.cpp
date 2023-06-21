@@ -285,13 +285,18 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
     node_mapper &nodes = *(_global_view->nodes);
     const app_mapper &apps = *_global_view->apps;
     replica_disk_usage_mapper &replicas = *_global_view->replicas;
+    LOG_INFO("gns: replicas size is {}",replicas.size());
     disk_total_usage_mapper &disks =  *_global_view->disks;
+    LOG_INFO("gns: disk size is {}",disks.size());
+
     //get Primary disk usage
     int total_primary_disk_usage_of_this_app = 0;
     for(auto gpid_map_it : replicas){
         rpc_address addr = gpid_map_it.first;
+        LOG_INFO("gns: addr is {}",addr);
         //get all primary
         partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
+        LOG_INFO("gns: primary size is {}",primary_set.size());
         for(auto iter : gpid_map_it.second){
             //current gpid in primary_set
             if (primary_set->count(iter.first)){
