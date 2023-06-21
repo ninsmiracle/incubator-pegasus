@@ -300,9 +300,9 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
         }
     }
 
-    LOG_DEBUG("Before try to copy primary ,the total Primary disk usage of app{} with app_id{} is {}MB",app->app_name,app->app_id,total_primary_disk_usage_of_this_app);
+    LOG_INFO("Before try to copy primary ,the total Primary disk usage of app{} with app_id{} is {}MB",app->app_name,app->app_id,total_primary_disk_usage_of_this_app);
     int primary_disk_replicas_low = total_primary_disk_usage_of_this_app / _alive_nodes;
-    LOG_DEBUG("copy_primary: primary_disk_replicas_low is {}",primary_disk_replicas_low);
+    LOG_INFO("copy_primary: primary_disk_replicas_low is {}",primary_disk_replicas_low);
 
 
     std::unique_ptr<copy_replica_operation> operation = std::make_unique<copy_primary_operation_by_disk>(
@@ -370,7 +370,7 @@ void copy_operation_by_disk::init_ordered_address_by_disk()
     LOG_DEBUG("gns,ordered_queue is ok");
 
     _ordered_address_by_disk.swap(ordered_queue);
-    LOG_DEBUG("gns,init_ordered_address_by_disk is ok");
+    LOG_INFO("gns,init_ordered_address_by_disk is ok");
 }
 
 void copy_operation_by_disk::copy_once(gpid selected_pid, migration_list *result)
@@ -521,7 +521,7 @@ bool copy_primary_operation_by_disk::can_select(gpid pid, migration_list *result
     int id_min = *_ordered_address_by_disk.begin();
     const node_state &min_ns = _nodes.at(_address_vec[id_min]);
     if (min_ns.served_as(pid) != partition_status::PS_INACTIVE) {
-        LOG_DEBUG("{}: skip gpid({}.{}) coz it is already a member on the target node",
+        LOG_INFO("{}: skip gpid({}.{}) coz it is already a member on the target node",
                   _app->get_logname(),
                   pid.get_app_id(),
                   pid.get_partition_index());
@@ -538,7 +538,7 @@ bool copy_primary_operation_by_disk::can_continue()
     int id_min = *_ordered_address_by_disk.begin();
     //_replicas_low is Mathematical Expectation
     if (_have_lower_than_average && _disk_usage[id_min] >= _replicas_low) {
-       LOG_DEBUG("{}: stop the copy due to primaries on all nodes will reach low later.",
+       LOG_INFO("{}: stop the copy due to primaries on all nodes will reach low later.",
                 _app->get_logname());
        return false;
     }
@@ -547,29 +547,29 @@ bool copy_primary_operation_by_disk::can_continue()
 
     //when skew of every replica is smaller than threshold,do not do balance continue
     if (_disk_usage[id_max] - _disk_usage[id_min] <= _disk_usage_balance_threshold) {
-       LOG_DEBUG("{}: stop the copy due to the primary skew between every replica is smaller than balance threshold.",
+       LOG_INFO("{}: stop the copy due to the primary skew between every replica is smaller than balance threshold.",
                 _app->get_logname());
        return false;
     }
 
     int expectation_residual = _disk_usage[id_max] - _replicas_low;
-    LOG_DEBUG("In disk usage app balance policy,next step will copy at most {}MB in expectation,max disk usage node is {},replicas_low is {}",expectation_residual,_disk_usage[id_max],_replicas_low);
+    LOG_INFO("In disk usage app balance policy,next step will copy at most {}MB in expectation,max disk usage node is {},replicas_low is {}",expectation_residual,_disk_usage[id_max],_replicas_low);
 
     gpid res_gpid = get_max_replica_disk_usage_smaller_than_expectation_residual(_address_vec[id_max],expectation_residual, true);
     //can not choose any replica in max disk load node in next step
     if(res_gpid.get_partition_index() < 0){
-       LOG_DEBUG("In disk usage app balance policy,can not find a gpid which is smaller than expectation residual.");
+       LOG_INFO("In disk usage app balance policy,can not find a gpid which is smaller than expectation residual.");
        return false;
     }
     int max_disk_usage_smaller_than_expectation_residual = _replicas[_address_vec[id_max]][res_gpid];
-    LOG_DEBUG("In disk usage app balance policy,max_disk_usage_smaller_than_expectation_residual is {}",max_disk_usage_smaller_than_expectation_residual);
+    LOG_INFO("In disk usage app balance policy,max_disk_usage_smaller_than_expectation_residual is {}",max_disk_usage_smaller_than_expectation_residual);
 
     return true;
 }
 
 int copy_primary_operation_by_disk::get_node_disk_usage(const dsn::replication::node_state &ns) const
 {
-    LOG_DEBUG("gns,get_node_disk_usage begin.");
+    LOG_INFO("gns,get_node_disk_usage begin.");
     int app_relica_disk_usage = 0;
 
     if(_app == nullptr){
@@ -578,12 +578,12 @@ int copy_primary_operation_by_disk::get_node_disk_usage(const dsn::replication::
 
     const partition_set * primary_set = ns.partitions(_app->app_id,true);
     if(nullptr == primary_set || primary_set->empty()){
-       LOG_DEBUG("gns,get_node_disk_usage get primary set is null or empty, addr is {}.",ns.addr());
+       LOG_INFO("gns,get_node_disk_usage get primary set is null or empty, addr is {}.",ns.addr());
        return 0;
     }
 
     for(auto iter : _replicas.at(ns.addr())){
-       LOG_DEBUG("gns,get_node_disk_usage replicas has addr {}.",ns.addr());
+       LOG_INFO("gns,get_node_disk_usage replicas has addr {}.",ns.addr());
        if(primary_set->count(iter.first)){
             app_relica_disk_usage += iter.second;
        }
@@ -626,7 +626,7 @@ bool copy_secondary_operation_by_disk::can_continue()
        return false;
     }
     int max_disk_usage_smaller_than_expectation_residual = _replicas[_address_vec[id_max]][res_gpid];
-    LOG_DEBUG("In disk usage app balance policy,max_disk_usage_smaller_than_expectation_residual is {}",max_disk_usage_smaller_than_expectation_residual);
+    LOG_INFO("In disk usage app balance policy,max_disk_usage_smaller_than_expectation_residual is {}",max_disk_usage_smaller_than_expectation_residual);
 
     return true;
 }
@@ -639,7 +639,7 @@ bool copy_secondary_operation_by_disk::can_select(dsn::gpid pid, dsn::replicatio
     int id_max = *_ordered_address_by_disk.rbegin();
     const node_state &max_ns = _nodes.at(_address_vec[id_max]);
     if (max_ns.served_as(pid) == partition_status::PS_PRIMARY) {
-       LOG_DEBUG("{}: do disk usage balance, skip gpid({}.{}) coz it is primary",
+       LOG_INFO("{}: do disk usage balance, skip gpid({}.{}) coz it is primary",
                  _app->get_logname(),
                  pid.get_app_id(),
                  pid.get_partition_index());
@@ -648,7 +648,7 @@ bool copy_secondary_operation_by_disk::can_select(dsn::gpid pid, dsn::replicatio
 
     // if the pid has been used
     if (result->find(pid) != result->end()) {
-       LOG_DEBUG("{}: do disk usage balance, skip gpid({}.{}) coz it is already copyed",
+       LOG_INFO("{}: do disk usage balance, skip gpid({}.{}) coz it is already copyed",
                  _app->get_logname(),
                  pid.get_app_id(),
                  pid.get_partition_index());
@@ -658,7 +658,7 @@ bool copy_secondary_operation_by_disk::can_select(dsn::gpid pid, dsn::replicatio
     int id_min = *_ordered_address_by_disk.begin();
     const node_state &min_ns = _nodes.at(_address_vec[id_min]);
     if (min_ns.served_as(pid) != partition_status::PS_INACTIVE) {
-       LOG_DEBUG("{}: skip gpid({}.{}) coz it is already a member on the target node",
+       LOG_INFO("{}: skip gpid({}.{}) coz it is already a member on the target node",
                  _app->get_logname(),
                  pid.get_app_id(),
                  pid.get_partition_index());

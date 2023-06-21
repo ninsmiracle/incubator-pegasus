@@ -3249,8 +3249,9 @@ void replica_stub::get_local_replica_storages(std::map<dsn::gpid,int32_t> &resul
                     LOG_ERROR("get path {} size not larger than 0,some thing wrong.",gpid_path);
                     continue;
                 }
-
+                //如果sst不到1mb，这里会变成0
                 int partition_disk_capacity_mb = partition_dir_size / 1024 / 1024;
+                partition_disk_capacity_mb = partition_disk_capacity_mb > 0 ? partition_disk_capacity_mb : 1;
                 result[pid] = partition_disk_capacity_mb;
 
                 LOG_INFO("send partition_disk usage to meta server succeed: partition_dir = {},this replica partition_disk_capacity_mb = {}",
