@@ -395,20 +395,24 @@ bool file_size(const std::string &path, int64_t &sz)
     int err;
 
     if (path.empty()) {
+        LOG_INFO("get {} file size failed,path is empty",path);
         return false;
     }
 
     err = get_normalized_path(path, npath);
     if (err != 0) {
+        LOG_INFO("get path {} get_normalized_path failed ",path);
         return false;
     }
 
     err = dsn::utils::filesystem::get_stat_internal(npath, st);
     if (err != 0) {
+        LOG_INFO("get path {} get_stat_internal failed ",path);
         return false;
     }
 
     if (!S_ISREG(st.st_mode)) {
+        LOG_INFO("get path {} failed,st_mode error",path);
         return false;
     }
 
