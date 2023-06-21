@@ -282,6 +282,7 @@ bool disk_usage_app_balance_policy::copy_secondary(const std::shared_ptr<app_sta
 }
 
 bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state> &app,bool still_have_less_than_average){
+    LOG_INFO("gns: begin copy_primary");
     node_mapper &nodes = *(_global_view->nodes);
     const app_mapper &apps = *(_global_view->apps);
     replica_disk_usage_mapper &replicas = *(_global_view->replicas);
