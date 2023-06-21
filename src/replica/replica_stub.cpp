@@ -3245,8 +3245,8 @@ void replica_stub::get_local_replica_storages(std::map<dsn::gpid,int32_t> &resul
                     continue;
                     // 暂时设置为失败一个就略过这个失败
                 }
-                if(0 == partition_dir_size){
-                    LOG_ERROR("get path {} size 0,some thing wrong.",gpid_path);
+                if(partition_dir_size <= 0){
+                    LOG_ERROR("get path {} size not larger than 0,some thing wrong.",gpid_path);
                     continue;
                 }
 

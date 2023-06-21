@@ -411,9 +411,13 @@ bool file_size(const std::string &path, int64_t &sz)
         return false;
     }
 
-    if (!S_ISREG(st.st_mode)) {
+    if (! (S_ISREG(st.st_mode) || S_ISDIR(st.st_mode)) ) {
         LOG_INFO("get path {} failed,st_mode error",path);
         return false;
+    }
+
+    if (S_ISDIR(st.st_mode) && !path_exists(path)){
+        LOG_INFO("get path {} failed,path not exist",path);
     }
 
     sz = st.st_size;
