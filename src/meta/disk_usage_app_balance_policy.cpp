@@ -210,8 +210,6 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( cons
         LOG_INFO("gns, nodes size is {},addr is {}",nodes.size(),addr);
         LOG_INFO("gns, nodes[addr] primary count is {}",nodes[addr].primary_count());
 
-
-
         //get all primary
         partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
         LOG_INFO("gns,in still_have_replicas_lower_than_avreag, primary_set size is {}",primary_set->size());
@@ -225,7 +223,8 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( cons
             nodes_sum += iter.second;
         }
 
-        disk_usage_by_nodes.emplace_back(nodes_sum);
+        LOG_INFO("gns,push back {} into vector",nodes_sum);
+        disk_usage_by_nodes.push_back(nodes_sum);
     }
 
     int expect_replicas_disk_usage_low = total_primary_disk_usage_of_this_app / nodes.size();
