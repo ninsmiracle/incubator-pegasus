@@ -183,6 +183,7 @@ void disk_usage_app_balance_policy::balance(bool checker, const meta_view *globa
                                    std::placeholders::_2))) {
         return;
     }
+    LOG_INFO("gns,begin to copy secondary");
 
     if (!need_balance_secondaries(checker)) {
         return;
@@ -281,6 +282,7 @@ bool disk_usage_app_balance_policy::need_balance_secondaries(bool balance_checke
 
 bool disk_usage_app_balance_policy::copy_secondary(const std::shared_ptr<app_state> &app, bool place_holder)
 {
+    LOG_INFO("gns,begin to copy secondary");
     node_mapper &nodes = *(_global_view->nodes);
     const app_mapper &apps = *_global_view->apps;
     replica_disk_usage_mapper &replicas = *_global_view->replicas;
@@ -383,6 +385,8 @@ bool copy_operation_by_disk::start(migration_list *result)
             _ordered_address_by_disk.erase(--_ordered_address_by_disk.end());
         }
     }
+
+    LOG_INFO("gns,start return true");
     return true;
 }
 

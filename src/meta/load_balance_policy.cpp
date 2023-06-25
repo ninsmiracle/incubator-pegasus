@@ -380,7 +380,7 @@ bool load_balance_policy::execute_balance(
             continue;
 
         bool enough_information = balance_operation(app, only_move_primary);
-        LOG_INFO("gns, get enough_information");
+        LOG_INFO("gns, get enough_information,now app is {}",app->app_id);
         if (!enough_information) {
             // Even if we don't have enough info for current app,
             // the decisions made by previous apps are kept.
@@ -399,7 +399,6 @@ bool load_balance_policy::execute_balance(
         }
 
         LOG_INFO("gns, now app {} is checking!!!",app->app_id);
-
     }
     return true;
 }
