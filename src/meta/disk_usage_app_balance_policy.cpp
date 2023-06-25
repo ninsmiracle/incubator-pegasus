@@ -199,6 +199,7 @@ void disk_usage_app_balance_policy::balance(bool checker, const meta_view *globa
 
 bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( const std::shared_ptr<app_state> &app,node_mapper nodes,replica_disk_usage_mapper replicas){
     //todo:考虑磁盘平衡阈值  控制 can_continue 因为磁盘负载均衡没有走最大流图了，所以需要有这个方法
+    LOG_INFO("gns,still_have_replicas_lower_than_avreage replicas size is {}",replicas.size());
     int total_primary_disk_usage_of_this_app = 0;
     std::vector<int> disk_usage_by_nodes;
     for(auto gpid_map_it : replicas){
@@ -218,6 +219,8 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( cons
     }
 
     int expect_replicas_disk_usage_low = total_primary_disk_usage_of_this_app / nodes.size();
+    LOG_INFO("gns,still_have_replicas_lower_than_avreage expect_replicas_disk_usage_lowis {}",expect_replicas_disk_usage_low);
+
     //int lower_count = 0;
     for (int i = 0; i < disk_usage_by_nodes.size(); i++) {
         if(disk_usage_by_nodes[i] < expect_replicas_disk_usage_low){
@@ -235,6 +238,7 @@ bool disk_usage_app_balance_policy::primary_balance(const std::shared_ptr<app_st
     //move primary is useless for disk usage
     LOG_INFO("begin copy primary to make disk usage balance");
     if (!only_move_primary) {
+        LOG_INFO("gns:disk_usage_app_balance_policy::copy_primary outside");
         ///原始逻辑中，第二个参数graph->have_less_than_average() 决定了 have_less_than_average ，间接决定了 can_continue,实际就是查看是否还有节点小于期望值
         return disk_usage_app_balance_policy::copy_primary(app, still_have_replicas_lower_than_avreage(app,*_global_view->nodes,*_global_view->replicas));
     } else {
