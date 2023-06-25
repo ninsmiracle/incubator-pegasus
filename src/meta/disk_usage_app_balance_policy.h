@@ -48,7 +48,7 @@ private:
     bool primary_balance(const std::shared_ptr<app_state> &app,
                                               bool only_move_primary);
     bool need_balance_secondaries(bool balance_checker);
-    bool copy_primary(const std::shared_ptr<app_state> &app,bool still_have_less_than_average);
+    bool copy_primary (const std::shared_ptr<app_state> &app,bool still_have_less_than_average);
     bool copy_secondary(const std::shared_ptr<app_state> &app, bool place_holder);
 
     bool still_have_replicas_lower_than_average( const std::shared_ptr<app_state> &app,node_mapper nodes,replica_disk_usage_mapper replicas);

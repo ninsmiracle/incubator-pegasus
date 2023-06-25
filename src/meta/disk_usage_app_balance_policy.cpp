@@ -257,11 +257,11 @@ bool disk_usage_app_balance_policy::primary_balance(const std::shared_ptr<app_st
     //move primary is useless for disk usage
     LOG_INFO("begin copy primary to make disk usage balance");
     if (!only_move_primary) {
-        LOG_INFO("gns:disk_usage_app_balance_policy::copy_primary outside");
+        LOG_INFO("gns:disk_usage_app_balance_policy::copy_primary outside.appid {}",app->app_id);
         ///原始逻辑中，第二个参数graph->have_less_than_average() 决定了 have_less_than_average ，间接决定了 can_continue,实际就是查看是否还有节点小于期望值
         bool copy_result = disk_usage_app_balance_policy::copy_primary(app, still_have_replicas_lower_than_average(app,*_global_view->nodes,*_global_view->replicas));
-        LOG_INFO("copy_result is ok");
-        LOG_INFO("copy_result*******,app {}",app->app_id);
+        LOG_INFO("copy_result is ok.appid {}",app->app_id);
+        LOG_INFO("copy_result*******,appid {}",app->app_id);
         return copy_result;
     } else {
             LOG_INFO("stop to copy primary for app({}) coz it is disabled", app->get_logname());
@@ -309,12 +309,12 @@ bool disk_usage_app_balance_policy::copy_secondary(const std::shared_ptr<app_sta
 }
 
 bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state> &app,bool still_have_less_than_average){
-    LOG_INFO("gns: begin copy_primary");
+    LOG_INFO("gns: begin copy_primary,appid {}",app->app_id);
     node_mapper &nodes = *(_global_view->nodes);
     const app_mapper &apps = *(_global_view->apps);
     replica_disk_usage_mapper &replicas = *(_global_view->replicas);
     disk_total_usage_mapper &disks =  *(_global_view->disks);
-    LOG_INFO("gns: put meta_view success");
+    LOG_INFO("gns: put meta_view success.appid {}",app->app_id);
 
     //get Primary disk usage
     int total_primary_disk_usage_of_this_app = 0;
@@ -322,7 +322,7 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
         rpc_address addr = gpid_map_it.first;
         LOG_INFO("gns: addr is {}",addr);
         if(!nodes.count(addr)){
-            LOG_INFO("gns,copy_primary can not find {} in nodes",addr);
+            LOG_INFO("gns,copy_primary can not find {} in nodes.appid {}",addr,app->app_id);
         }
         //get all primary
         partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
@@ -330,7 +330,7 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
             LOG_INFO("There are no primary replica of app_id {} on nodes {}",app->app_id,addr);
             continue;
         }else{
-            LOG_INFO("gns,in copy_primary primary_set size is {}",primary_set->size());
+            LOG_INFO("gns,in copy_primary primary_set size is {},appid {}",primary_set->size(),app->app_id);
         }
 
         for(auto iter : gpid_map_it.second){
@@ -341,19 +341,19 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
         }
     }
 
-    LOG_INFO("copy_primary: total_primary_disk_usage_of_this_app is {},alive_nodes is {}",total_primary_disk_usage_of_this_app,_alive_nodes);
+    LOG_INFO("copy_primary: total_primary_disk_usage_of_this_app is {},alive_nodes is {}.appid {}",total_primary_disk_usage_of_this_app,_alive_nodes,app->app_id);
     int primary_disk_replicas_low = total_primary_disk_usage_of_this_app / _alive_nodes;
-    LOG_INFO("copy_primary: primary_disk_replicas_low is {}",primary_disk_replicas_low);
+    LOG_INFO("copy_primary: primary_disk_replicas_low is {}. appid {}",primary_disk_replicas_low,app->app_id);
 
 
     std::unique_ptr<copy_operation_by_disk> operation = std::make_unique<copy_primary_operation_by_disk>(
         app, apps, nodes,replicas,disks, address_vec, address_id, still_have_less_than_average, primary_disk_replicas_low,_balance_threshold);
-    LOG_INFO("gns, copy_primary start");
+    LOG_INFO("gns, copy_primary start.appid {}",app->app_id);
     bool start_result = operation->start(_migration_result);
     if(start_result){
-        LOG_INFO("gns, copy_primary start is true,app {}",app->app_id);
+        LOG_INFO("gns, copy_primary start is true,appid {}",app->app_id);
     }else{
-        LOG_INFO("gns, copy_primary start is false,app {}",app->app_id);
+        LOG_INFO("gns, copy_primary start is false,appid {}",app->app_id);
     }
 
 
@@ -375,29 +375,29 @@ copy_operation_by_disk::copy_operation_by_disk(const std::shared_ptr<app_state> 
 
 bool copy_operation_by_disk::start(migration_list *result)
 {
-    LOG_INFO("gns,begin to start");
+    LOG_INFO("gns,begin to start.appid {}",_app->app_id);
     //calculate_disk_usage(_nodes,_apps,_replicas,_app->app_id,only_copy_primary(),/*out*/ _disk_usage);
     init_ordered_address_by_disk();
     //todo: 可能需要处理异常情况
 
     while (true) {
-        LOG_INFO("gns,begin to can_continue");
+        LOG_INFO("gns,begin to can_continue.appid {}",_app->app_id);
         if (!can_continue()) {
             break;
         }
-        LOG_INFO("gns,begin to select_partition");
+        LOG_INFO("gns,begin to select_partition.appid {}",_app->app_id);
         gpid selected_pid = select_partition(result);
         if (selected_pid.get_app_id() != -1) {
-            LOG_INFO("gns,begin to copy_once");
+            LOG_INFO("gns,begin to copy_once.appid {}",_app->app_id);
             copy_once(selected_pid, result);
-            LOG_INFO("gns,begin to update_ordered_address_by_disk");
+            LOG_INFO("gns,begin to update_ordered_address_by_disk.appid {}",_app->app_id);
             update_ordered_address_by_disk(selected_pid);
         } else {
             _ordered_address_by_disk.erase(--_ordered_address_by_disk.end());
         }
     }
 
-    LOG_INFO("gns,start return true,app {}",_app->app_id);
+    LOG_INFO("gns,start return true.appid {}",_app->app_id);
     return true;
 }
 
