@@ -260,6 +260,7 @@ bool disk_usage_app_balance_policy::primary_balance(const std::shared_ptr<app_st
         LOG_INFO("gns:disk_usage_app_balance_policy::copy_primary outside");
         ///原始逻辑中，第二个参数graph->have_less_than_average() 决定了 have_less_than_average ，间接决定了 can_continue,实际就是查看是否还有节点小于期望值
         bool copy_result = disk_usage_app_balance_policy::copy_primary(app, still_have_replicas_lower_than_avreage(app,*_global_view->nodes,*_global_view->replicas));
+        LOG_INFO("copy_result is ok");
         LOG_INFO("copy_result*******,app {}",app->app_id);
         return copy_result;
     } else {
