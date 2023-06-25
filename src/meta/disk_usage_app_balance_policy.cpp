@@ -336,12 +336,13 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
         }
     }
 
-    LOG_INFO("copy_primary: total_primary_disk_usage_of_this_app is {}",total_primary_disk_usage_of_this_app);
+    LOG_INFO("copy_primary: total_primary_disk_usage_of_this_app is {},alive_nodes is {}",total_primary_disk_usage_of_this_app,_alive_nodes);
+    LOG_INFO("gns,now nodes size is {}",nodes.size());
     int primary_disk_replicas_low = total_primary_disk_usage_of_this_app / _alive_nodes;
     LOG_INFO("copy_primary: primary_disk_replicas_low is {}",primary_disk_replicas_low);
 
 
-    std::unique_ptr<copy_replica_operation> operation = std::make_unique<copy_primary_operation_by_disk>(
+    std::unique_ptr<copy_operation_by_disk> operation = std::make_unique<copy_primary_operation_by_disk>(
         app, apps, nodes,replicas,disks, address_vec, address_id, still_have_less_than_average, primary_disk_replicas_low,_balance_threshold);
     LOG_INFO("gns, copy_primary start");
     return operation->start(_migration_result);
