@@ -386,7 +386,7 @@ bool copy_operation_by_disk::start(migration_list *result)
         }
     }
 
-    LOG_INFO("gns,start return true");
+    LOG_INFO("gns,start return true,app {}",_app->app_id);
     return true;
 }
 
