@@ -321,7 +321,13 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
         }
         //get all primary
         partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
-        LOG_INFO("gns: primary size is {}",primary_set->size());
+        if(primary_set == nullptr){
+            LOG_INFO("There are no primary replica of app_id {} on nodes {}",app->app_id,addr);
+            continue;
+        }else{
+            LOG_INFO("gns,in copy_primary primary_set size is {}",primary_set->size());
+        }
+
         for(auto iter : gpid_map_it.second){
             //current gpid in primary_set
             if (primary_set->count(iter.first)){
@@ -330,7 +336,6 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
         }
     }
 
-    LOG_INFO("Before try to copy primary ,the total Primary disk usage of app{} with app_id{} is {}MB",app->app_name,app->app_id,total_primary_disk_usage_of_this_app);
     int primary_disk_replicas_low = total_primary_disk_usage_of_this_app / _alive_nodes;
     LOG_INFO("copy_primary: primary_disk_replicas_low is {}",primary_disk_replicas_low);
 
@@ -513,6 +518,11 @@ dsn::gpid copy_operation_by_disk::get_max_replica_disk_usage_smaller_than_expect
     dsn::gpid res_gpid(-1,-1);
     //get all primary or all replica
     partition_set * primary_set = _nodes[addr].partitions(_app->app_id,only_primary);
+    if(primary_set == nullptr){
+        LOG_INFO("can not find replica of appid {} in node {}",_app->app_id,addr);
+        return res_gpid;
+    }
+
     for(auto iter : _replicas[addr]){
         //current gpid in primary_set
         if (primary_set->count(iter.first)){
