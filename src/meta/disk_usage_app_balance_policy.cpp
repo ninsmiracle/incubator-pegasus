@@ -259,7 +259,9 @@ bool disk_usage_app_balance_policy::primary_balance(const std::shared_ptr<app_st
     if (!only_move_primary) {
         LOG_INFO("gns:disk_usage_app_balance_policy::copy_primary outside");
         ///原始逻辑中，第二个参数graph->have_less_than_average() 决定了 have_less_than_average ，间接决定了 can_continue,实际就是查看是否还有节点小于期望值
-        return disk_usage_app_balance_policy::copy_primary(app, still_have_replicas_lower_than_avreage(app,*_global_view->nodes,*_global_view->replicas));
+        bool copy_result = disk_usage_app_balance_policy::copy_primary(app, still_have_replicas_lower_than_avreage(app,*_global_view->nodes,*_global_view->replicas));
+        LOG_INFO("copy_result*******,app {}",app->app_id);
+        return copy_result;
     } else {
             LOG_INFO("stop to copy primary for app({}) coz it is disabled", app->get_logname());
             return true;
@@ -300,7 +302,7 @@ bool disk_usage_app_balance_policy::copy_secondary(const std::shared_ptr<app_sta
 
     int replicas_low = total_disk_usage_of_this_app / _alive_nodes;
 
-    std::unique_ptr<copy_replica_operation> operation = std::make_unique<copy_secondary_operation_by_disk>(
+    std::unique_ptr<copy_operation_by_disk> operation = std::make_unique<copy_secondary_operation_by_disk>(
         app, apps, nodes, replicas,disks,address_vec, address_id, replicas_low,_balance_threshold);
     return operation->start(_migration_result);
 }
