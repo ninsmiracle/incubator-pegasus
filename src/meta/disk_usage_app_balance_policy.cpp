@@ -213,10 +213,11 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( cons
 
         //get all primary
         partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
-        LOG_INFO("gns, primary_set size is {}",primary_set.size());
+        LOG_INFO("gns,in still_have_replicas_lower_than_avreag, primary_set size is {}",primary_set->size());
         for(auto iter : gpid_map_it.second){
             //current gpid in primary_set
             if (primary_set->count(iter.first)){
+                LOG_INFO("gns,in still_have_replicas_lower_than_avreag, gpidis {}.{}",iter.first.get_app_id(),iter.first.get_partition_index());
                 total_primary_disk_usage_of_this_app += iter.second;
             }
             nodes_sum += iter.second;
