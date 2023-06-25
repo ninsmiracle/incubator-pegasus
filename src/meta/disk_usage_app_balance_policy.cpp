@@ -349,7 +349,10 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
     std::unique_ptr<copy_operation_by_disk> operation = std::make_unique<copy_primary_operation_by_disk>(
         app, apps, nodes,replicas,disks, address_vec, address_id, still_have_less_than_average, primary_disk_replicas_low,_balance_threshold);
     LOG_INFO("gns, copy_primary start");
-    return operation->start(_migration_result);
+    bool start_result = operation->start(_migration_result);
+    LOG_INFO("gns, copy_primary start is ok,app {}",app->app_id);
+
+    return start_result;
 }
 
 
@@ -370,6 +373,7 @@ bool copy_operation_by_disk::start(migration_list *result)
     LOG_INFO("gns,begin to start");
     //calculate_disk_usage(_nodes,_apps,_replicas,_app->app_id,only_copy_primary(),/*out*/ _disk_usage);
     init_ordered_address_by_disk();
+    //todo: 可能需要处理异常情况
 
     while (true) {
         LOG_INFO("gns,begin to can_continue");
