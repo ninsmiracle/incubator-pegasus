@@ -149,7 +149,7 @@ bool disk_usage_app_balance_policy::init(const dsn::replication::meta_view *glob
     _migration_result = list;
     const node_mapper &nodes = *_global_view->nodes;
     _alive_nodes = nodes.size();
-    //number_nodes(nodes);
+    number_nodes(nodes);
 
     //阈值赋值
     _min_replica_disk_usage = get_min_replica_disk_usage(_global_view);
@@ -391,9 +391,14 @@ void copy_operation_by_disk::init_ordered_address_by_disk()
 {
     LOG_INFO("gns,debug begin");
     //init _disk_usage
+    LOG_INFO("gns,_address_vec is {}",_address_vec.size());
     _disk_usage.resize(_address_vec.size(), 0);
+
+    LOG_INFO("gns,init nodes size {}",_nodes.size());
     for (const auto &iter : _nodes) {
+        LOG_INFO("gns,init _address_id size {}",_address_id.size());
         auto id = _address_id.at(iter.first);
+
         _disk_usage[id] = get_node_disk_usage(iter.second);
         LOG_INFO("gns,now id is {} disk {}",id,_disk_usage[id]);
     }

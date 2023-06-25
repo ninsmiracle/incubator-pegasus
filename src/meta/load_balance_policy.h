@@ -114,6 +114,8 @@ protected:
     // }
     std::unique_ptr<command_deregister> _ctrl_balancer_ignored_apps;
 
+    void number_nodes(const node_mapper &nodes);
+
 private:
     void start_moving_primary(const std::shared_ptr<app_state> &app,
                               const rpc_address &from,
@@ -129,7 +131,6 @@ private:
                             disk_load *current_load,
                             rpc_address from,
                             rpc_address to);
-    void number_nodes(const node_mapper &nodes);
 
     std::string remote_command_balancer_ignored_app_ids(const std::vector<std::string> &args);
     std::string set_balancer_ignored_app_ids(const std::vector<std::string> &args);
