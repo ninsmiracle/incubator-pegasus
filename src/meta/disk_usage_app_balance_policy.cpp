@@ -90,6 +90,7 @@ int get_min_replica_disk_usage(const meta_view *global_view){
         for(auto gpid_pair : node_pair.second){
             if(gpid_pair.second < min_replica_usage){
                 min_replica_usage = gpid_pair.second;
+                LOG_INFO("now min_replica_usage is {},current usage is {}",min_replica_usage, gpid_pair.second);
             }
         }
     }
@@ -217,8 +218,9 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( cons
         for(auto iter : gpid_map_it.second){
             //current gpid in primary_set
             if (primary_set->count(iter.first)){
-                LOG_INFO("gns,in still_have_replicas_lower_than_avreag, gpidis {}.{}",iter.first.get_app_id(),iter.first.get_partition_index());
+                LOG_INFO("gns,in still_have_replicas_lower_than_avreag, gpidis {}.{},USAGE is {}",iter.first.get_app_id(),iter.first.get_partition_index(),iter.second);
                 total_primary_disk_usage_of_this_app += iter.second;
+                LOG_INFO("gns,now total_primary_disk_usage_of_this_app {}",total_primary_disk_usage_of_this_app);
             }
             nodes_sum += iter.second;
         }
@@ -227,7 +229,7 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( cons
     }
 
     int expect_replicas_disk_usage_low = total_primary_disk_usage_of_this_app / nodes.size();
-    LOG_INFO("gns, expect_replicas_disk_usage_lowis {}",expect_replicas_disk_usage_low);
+    LOG_INFO("gns, expect_replicas_disk_usage_low is {}",expect_replicas_disk_usage_low);
 
     //int lower_count = 0;
     for (int i = 0; i < disk_usage_by_nodes.size(); i++) {
