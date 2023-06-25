@@ -199,7 +199,7 @@ void disk_usage_app_balance_policy::balance(bool checker, const meta_view *globa
                               std::placeholders::_2));
 }
 
-bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( const std::shared_ptr<app_state> &app,node_mapper nodes,replica_disk_usage_mapper replicas){
+bool disk_usage_app_balance_policy::still_have_replicas_lower_than_average( const std::shared_ptr<app_state> &app,node_mapper nodes,replica_disk_usage_mapper replicas){
     //todo:考虑磁盘平衡阈值  控制 can_continue 因为磁盘负载均衡没有走最大流图了，所以需要有这个方法
     LOG_INFO("gns, replicas size is {}",replicas.size());
     int total_primary_disk_usage_of_this_app = 0;
@@ -220,13 +220,13 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( cons
             LOG_INFO("There are no primary replica of app_id {} on nodes {}",app->app_id,addr);
             continue;
         }else{
-            LOG_INFO("gns,in still_have_replicas_lower_than_avreag, primary_set size is {}",primary_set->size());
+            LOG_INFO("gns,in still_have_replicas_lower_than_average, primary_set size is {}",primary_set->size());
         }
 
         for(auto iter : gpid_map_it.second){
             //current gpid in primary_set
             if (primary_set->count(iter.first)){
-                LOG_INFO("gns,in still_have_replicas_lower_than_avreag, gpidis {}.{},USAGE is {}",iter.first.get_app_id(),iter.first.get_partition_index(),iter.second);
+                LOG_INFO("gns,in still_have_replicas_lower_than_average, gpidis {}.{},USAGE is {}",iter.first.get_app_id(),iter.first.get_partition_index(),iter.second);
                 total_primary_disk_usage_of_this_app += iter.second;
                 LOG_INFO("gns,now total_primary_disk_usage_of_this_app {}",total_primary_disk_usage_of_this_app);
             }
@@ -259,7 +259,7 @@ bool disk_usage_app_balance_policy::primary_balance(const std::shared_ptr<app_st
     if (!only_move_primary) {
         LOG_INFO("gns:disk_usage_app_balance_policy::copy_primary outside");
         ///原始逻辑中，第二个参数graph->have_less_than_average() 决定了 have_less_than_average ，间接决定了 can_continue,实际就是查看是否还有节点小于期望值
-        bool copy_result = disk_usage_app_balance_policy::copy_primary(app, still_have_replicas_lower_than_avreage(app,*_global_view->nodes,*_global_view->replicas));
+        bool copy_result = disk_usage_app_balance_policy::copy_primary(app, still_have_replicas_lower_than_average(app,*_global_view->nodes,*_global_view->replicas));
         LOG_INFO("copy_result is ok");
         LOG_INFO("copy_result*******,app {}",app->app_id);
         return copy_result;
@@ -342,7 +342,6 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
     }
 
     LOG_INFO("copy_primary: total_primary_disk_usage_of_this_app is {},alive_nodes is {}",total_primary_disk_usage_of_this_app,_alive_nodes);
-    LOG_INFO("gns,now nodes size is {}",nodes.size());
     int primary_disk_replicas_low = total_primary_disk_usage_of_this_app / _alive_nodes;
     LOG_INFO("copy_primary: primary_disk_replicas_low is {}",primary_disk_replicas_low);
 
@@ -351,7 +350,12 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
         app, apps, nodes,replicas,disks, address_vec, address_id, still_have_less_than_average, primary_disk_replicas_low,_balance_threshold);
     LOG_INFO("gns, copy_primary start");
     bool start_result = operation->start(_migration_result);
-    LOG_INFO("gns, copy_primary start is ok,app {}",app->app_id);
+    if(start_result){
+        LOG_INFO("gns, copy_primary start is true,app {}",app->app_id);
+    }else{
+        LOG_INFO("gns, copy_primary start is false,app {}",app->app_id);
+    }
+
 
     return start_result;
 }
@@ -400,7 +404,7 @@ bool copy_operation_by_disk::start(migration_list *result)
 
 void copy_operation_by_disk::init_ordered_address_by_disk()
 {
-    LOG_INFO("gns,debug begin");
+    LOG_INFO("gns,int oreder address vec begin");
     //init _disk_usage
     LOG_INFO("gns,_address_vec is {}",_address_vec.size());
     _disk_usage.resize(_address_vec.size(), 0);
@@ -411,7 +415,7 @@ void copy_operation_by_disk::init_ordered_address_by_disk()
         auto id = _address_id.at(iter.first);
 
         _disk_usage[id] = get_node_disk_usage(iter.second);
-        LOG_INFO("gns,now id is {} disk {}",id,_disk_usage[id]);
+        LOG_INFO("gns,now order id is {} disk_usage is {}",id,_disk_usage[id]);
     }
     LOG_INFO("gns,get_node_disk_usage is ok");
 
