@@ -210,11 +210,17 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( cons
         LOG_INFO("gns, nodes size is {},addr is {}",nodes.size(),addr);
         LOG_INFO("gns, nodes-addr primary count is {}",nodes[addr].primary_count());
 
-        if(!nodes.count(addr)){
-            LOG_INFO("gns, can not find {} in nodes",addr);
+        if(nodes.find(addr) == nodes.end()){
+            LOG_ERROR("gns, can not find {} in nodes",addr);
         }
         //get all primary
         partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
+        if(primary_set == nullptr){
+            LOG_INFO("There are no primary replica of app_id {} on nodes {}",app->app_id,addr);
+            continue;
+        }
+
+
         LOG_INFO("gns,in still_have_replicas_lower_than_avreag, primary_set size is {}",primary_set->size());
         for(auto iter : gpid_map_it.second){
             //current gpid in primary_set

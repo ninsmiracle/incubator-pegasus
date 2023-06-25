@@ -585,14 +585,14 @@ const partition_set *node_state::get_partitions(int app_id, bool only_primary) c
         all_partitions = &app_primaries;
     else
         all_partitions = &app_partitions;
-    LOG_DEBUG("find appid is {}",app_id);
+    LOG_INFO("find appid is {}",app_id);
 
     auto iter = all_partitions->find(app_id);
     if (iter == all_partitions->end()){
-        LOG_DEBUG("gns,get_partitions return a nullptr.");
+        LOG_INFO("gns,get_partitions return a nullptr.");
         return nullptr;
     }else{
-        LOG_DEBUG("gns,get_partitions return a non null ptr.");
+        LOG_INFO("gns,get_partitions return a non null ptr.");
         return &(iter->second);
     }
 
