@@ -208,8 +208,11 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( cons
         int nodes_sum = 0;
 
         LOG_INFO("gns, nodes size is {},addr is {}",nodes.size(),addr);
-        LOG_INFO("gns, nodes[addr] primary count is {}",nodes[addr].primary_count());
+        LOG_INFO("gns, nodes-addr primary count is {}",nodes[addr].primary_count());
 
+        if(!nodes.count(addr)){
+            LOG_INFO("gns, can not find {} in nodes",addr);
+        }
         //get all primary
         partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
         LOG_INFO("gns,in still_have_replicas_lower_than_avreag, primary_set size is {}",primary_set->size());
@@ -307,6 +310,9 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
     for(auto gpid_map_it : replicas){
         rpc_address addr = gpid_map_it.first;
         LOG_INFO("gns: addr is {}",addr);
+        if(!nodes.count(addr)){
+            LOG_INFO("gns,copy_primary can not find {} in nodes",addr);
+        }
         //get all primary
         partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
         LOG_INFO("gns: primary size is {}",primary_set->size());
