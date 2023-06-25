@@ -255,7 +255,7 @@ bool disk_usage_app_balance_policy::primary_balance(const std::shared_ptr<app_st
 {
     ///切角色对磁盘负载似乎没有作用
     //move primary is useless for disk usage
-    LOG_INFO("begin copy primary to make disk usage balance");
+    LOG_INFO("begin copy primary to make disk usage balance.appid {}",app->app_id);
     if (!only_move_primary) {
         LOG_INFO("gns:disk_usage_app_balance_policy::copy_primary outside.appid {}",app->app_id);
         ///原始逻辑中，第二个参数graph->have_less_than_average() 决定了 have_less_than_average ，间接决定了 can_continue,实际就是查看是否还有节点小于期望值
@@ -652,7 +652,7 @@ int copy_primary_operation_by_disk::get_node_disk_usage(const dsn::replication::
     }
 
     for(auto iter : _replicas.at(ns.addr())){
-       LOG_INFO("gns,get_node_disk_usage replicas has addr {}.",ns.addr());
+       //LOG_INFO("gns,get_node_disk_usage replicas has addr {}.",ns.addr());
        if(primary_set->count(iter.first)){
             app_relica_disk_usage += iter.second;
        }
