@@ -199,14 +199,21 @@ void disk_usage_app_balance_policy::balance(bool checker, const meta_view *globa
 
 bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( const std::shared_ptr<app_state> &app,node_mapper nodes,replica_disk_usage_mapper replicas){
     //todo:考虑磁盘平衡阈值  控制 can_continue 因为磁盘负载均衡没有走最大流图了，所以需要有这个方法
-    LOG_INFO("gns,still_have_replicas_lower_than_avreage replicas size is {}",replicas.size());
+    LOG_INFO("gns, replicas size is {}",replicas.size());
     int total_primary_disk_usage_of_this_app = 0;
     std::vector<int> disk_usage_by_nodes;
     for(auto gpid_map_it : replicas){
         rpc_address addr = gpid_map_it.first;
         int nodes_sum = 0;
+
+        LOG_INFO("gns, nodes size is {},addr is {}",nodes.size(),addr);
+        LOG_INFO("gns, nodes[addr] primary count is {}",nodes[addr].primary_count());
+
+
+
         //get all primary
         partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
+        LOG_INFO("gns, primary_set size is {}",primary_set.size());
         for(auto iter : gpid_map_it.second){
             //current gpid in primary_set
             if (primary_set->count(iter.first)){
@@ -219,7 +226,7 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( cons
     }
 
     int expect_replicas_disk_usage_low = total_primary_disk_usage_of_this_app / nodes.size();
-    LOG_INFO("gns,still_have_replicas_lower_than_avreage expect_replicas_disk_usage_lowis {}",expect_replicas_disk_usage_low);
+    LOG_INFO("gns, expect_replicas_disk_usage_lowis {}",expect_replicas_disk_usage_low);
 
     //int lower_count = 0;
     for (int i = 0; i < disk_usage_by_nodes.size(); i++) {
