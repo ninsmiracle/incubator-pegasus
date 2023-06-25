@@ -597,6 +597,8 @@ bool copy_primary_operation_by_disk::can_continue()
 
     int id_max = *_ordered_address_by_disk.rbegin();
 
+    LOG_INFO("max {}mb,min {}mb",_disk_usage[id_max],_disk_usage[id_min]);
+
     //when skew of every replica is smaller than threshold,do not do balance continue
     if (_disk_usage[id_max] - _disk_usage[id_min] <= _disk_usage_balance_threshold) {
        LOG_INFO("{}: stop the copy due to the primary skew between every replica is smaller than balance threshold.",

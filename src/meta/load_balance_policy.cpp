@@ -369,6 +369,7 @@ bool load_balance_policy::execute_balance(
     bool only_move_primary,
     const std::function<bool(const std::shared_ptr<app_state> &, bool)> &balance_operation)
 {
+    LOG_INFO("gns, begin execute_balance");
     for (const auto &kv : apps) {
         const std::shared_ptr<app_state> &app = kv.second;
         if (is_ignored_app(kv.first)) {
@@ -379,6 +380,7 @@ bool load_balance_policy::execute_balance(
             continue;
 
         bool enough_information = balance_operation(app, only_move_primary);
+        LOG_INFO("gns, get enough_information");
         if (!enough_information) {
             // Even if we don't have enough info for current app,
             // the decisions made by previous apps are kept.
@@ -386,6 +388,7 @@ bool load_balance_policy::execute_balance(
             return false;
         }
         if (!balance_checker) {
+            LOG_INFO("gns, now app {} is not checking!!!",app->app_id);
             if (!_migration_result->empty()) {
                 if (balance_in_turn) {
                     LOG_INFO("stop to handle more apps after we found some actions for {}",
@@ -394,6 +397,9 @@ bool load_balance_policy::execute_balance(
                 }
             }
         }
+
+        LOG_INFO("gns, now app {} is checking!!!",app->app_id);
+
     }
     return true;
 }
