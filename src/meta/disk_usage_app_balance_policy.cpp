@@ -367,7 +367,6 @@ bool copy_operation_by_disk::start(migration_list *result)
     //calculate_disk_usage(_nodes,_apps,_replicas,_app->app_id,only_copy_primary(),/*out*/ _disk_usage);
     init_ordered_address_by_disk();
 
-
     while (true) {
         LOG_INFO("gns,begin to can_continue");
         if (!can_continue()) {
@@ -390,15 +389,15 @@ bool copy_operation_by_disk::start(migration_list *result)
 
 void copy_operation_by_disk::init_ordered_address_by_disk()
 {
-    LOG_DEBUG("gns,debug begin");
+    LOG_INFO("gns,debug begin");
     //init _disk_usage
     _disk_usage.resize(_address_vec.size(), 0);
     for (const auto &iter : _nodes) {
         auto id = _address_id.at(iter.first);
         _disk_usage[id] = get_node_disk_usage(iter.second);
-        LOG_DEBUG("gns,now id is {} disk {}",id,_disk_usage[id]);
+        LOG_INFO("gns,now id is {} disk {}",id,_disk_usage[id]);
     }
-    LOG_DEBUG("gns,get_node_disk_usage is ok");
+    LOG_INFO("gns,get_node_disk_usage is ok");
 
     std::set<int, std::function<bool(int left, int right)>> ordered_queue(
         [this](int left, int right) {
@@ -410,7 +409,7 @@ void copy_operation_by_disk::init_ordered_address_by_disk()
         auto id = _address_id.at(iter.first);
         ordered_queue.insert(id);
     }
-    LOG_DEBUG("gns,ordered_queue is ok");
+    LOG_INFO("gns,ordered_queue is ok");
 
     _ordered_address_by_disk.swap(ordered_queue);
     LOG_INFO("gns,init_ordered_address_by_disk is ok");
@@ -515,7 +514,7 @@ dsn::gpid copy_operation_by_disk::select_max_load_gpid(const partition_set *part
             selected_pid = pid;
         }
     }
-    LOG_DEBUG("max node disk usage is {},replicas_low {}",_disk_usage[id_max],_replicas_low);
+    LOG_INFO("max node disk usage is {},replicas_low {}",_disk_usage[id_max],_replicas_low);
 
     return selected_pid;
 }
