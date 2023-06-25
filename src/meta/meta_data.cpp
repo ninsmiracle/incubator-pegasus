@@ -620,7 +620,13 @@ partition_set *node_state::get_partitions(app_id id, bool only_primary, bool cre
 
 partition_set *node_state::partitions(app_id id, bool only_primary)
 {
-    return const_cast<partition_set *>(get_partitions(id, only_primary));
+    const partition_set* partitionsPtr = get_partitions(id, only_primary);
+    if (partitionsPtr == nullptr) {
+        LOG_INFO("Get a nullptr ,to find {} on node ",id);
+        return nullptr;
+    }
+
+    return const_cast<partition_set*>(partitionsPtr);
 }
 
 const partition_set *node_state::partitions(app_id id, bool only_primary) const

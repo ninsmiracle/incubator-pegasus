@@ -218,10 +218,10 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_avreage( cons
         if(primary_set == nullptr){
             LOG_INFO("There are no primary replica of app_id {} on nodes {}",app->app_id,addr);
             continue;
+        }else{
+            LOG_INFO("gns,in still_have_replicas_lower_than_avreag, primary_set size is {}",primary_set->size());
         }
 
-
-        LOG_INFO("gns,in still_have_replicas_lower_than_avreag, primary_set size is {}",primary_set->size());
         for(auto iter : gpid_map_it.second){
             //current gpid in primary_set
             if (primary_set->count(iter.first)){
