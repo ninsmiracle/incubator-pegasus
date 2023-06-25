@@ -336,12 +336,14 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
         }
     }
 
+    LOG_INFO("copy_primary: total_primary_disk_usage_of_this_app is {}",total_primary_disk_usage_of_this_app);
     int primary_disk_replicas_low = total_primary_disk_usage_of_this_app / _alive_nodes;
     LOG_INFO("copy_primary: primary_disk_replicas_low is {}",primary_disk_replicas_low);
 
 
     std::unique_ptr<copy_replica_operation> operation = std::make_unique<copy_primary_operation_by_disk>(
         app, apps, nodes,replicas,disks, address_vec, address_id, still_have_less_than_average, primary_disk_replicas_low,_balance_threshold);
+    LOG_INFO("gns, copy_primary start");
     return operation->start(_migration_result);
 }
 
@@ -360,17 +362,22 @@ copy_operation_by_disk::copy_operation_by_disk(const std::shared_ptr<app_state> 
 
 bool copy_operation_by_disk::start(migration_list *result)
 {
+    LOG_INFO("gns,begin to start");
     //calculate_disk_usage(_nodes,_apps,_replicas,_app->app_id,only_copy_primary(),/*out*/ _disk_usage);
     init_ordered_address_by_disk();
 
 
     while (true) {
+        LOG_INFO("gns,begin to can_continue");
         if (!can_continue()) {
             break;
         }
+        LOG_INFO("gns,begin to select_partition");
         gpid selected_pid = select_partition(result);
         if (selected_pid.get_app_id() != -1) {
+            LOG_INFO("gns,begin to copy_once");
             copy_once(selected_pid, result);
+            LOG_INFO("gns,begin to update_ordered_address_by_disk");
             update_ordered_address_by_disk(selected_pid);
         } else {
             _ordered_address_by_disk.erase(--_ordered_address_by_disk.end());
