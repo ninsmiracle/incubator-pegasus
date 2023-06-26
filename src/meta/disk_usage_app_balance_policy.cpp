@@ -201,15 +201,15 @@ void disk_usage_app_balance_policy::balance(bool checker, const meta_view *globa
 
 bool disk_usage_app_balance_policy::still_have_replicas_lower_than_average( const std::shared_ptr<app_state> &app,node_mapper nodes,replica_disk_usage_mapper replicas){
     //todo:考虑磁盘平衡阈值  控制 can_continue 因为磁盘负载均衡没有走最大流图了，所以需要有这个方法
-    LOG_INFO("gns, replicas size is {}",replicas.size());
+    //LOG_INFO("gns,replicas size is {}",replicas.size());
     int total_primary_disk_usage_of_this_app = 0;
     std::vector<int> disk_usage_by_nodes;
     for(auto gpid_map_it : replicas){
         rpc_address addr = gpid_map_it.first;
         int nodes_sum = 0;
 
-        LOG_INFO("gns, nodes size is {},addr is {}",nodes.size(),addr);
-        LOG_INFO("gns, nodes-addr primary count is {}",nodes[addr].primary_count());
+        LOG_INFO("gns, nodes size is {},addr is {}.appid {}",nodes.size(),addr,app->app_id);
+        LOG_INFO("gns, nodes-addr primary count is {}.appid {}",nodes[addr].primary_count(),app->app_id);
 
         if(nodes.find(addr) == nodes.end()){
             LOG_ERROR("gns, can not find {} in nodes",addr);
@@ -217,7 +217,7 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_average( cons
         //get all primary
         partition_set * primary_set = nodes[addr].partitions(app->app_id,true);
         if(primary_set == nullptr){
-            LOG_INFO("There are no primary replica of app_id {} on nodes {}",app->app_id,addr);
+            LOG_INFO("There are no primary replica of on nodes {}.appid {}",addr,app->app_id);
             continue;
         }else{
             LOG_INFO("gns,in still_have_replicas_lower_than_average, primary_set size is {}",primary_set->size());
@@ -233,7 +233,7 @@ bool disk_usage_app_balance_policy::still_have_replicas_lower_than_average( cons
             nodes_sum += iter.second;
         }
 
-        LOG_INFO("gns,push back {} into vector",nodes_sum);
+        //LOG_INFO("gns,push back {} into vector",nodes_sum);
         disk_usage_by_nodes.push_back(nodes_sum);
     }
 
@@ -638,7 +638,7 @@ bool copy_primary_operation_by_disk::can_continue()
 
 int copy_primary_operation_by_disk::get_node_disk_usage(const dsn::replication::node_state &ns) const
 {
-    LOG_INFO("gns,get_node_disk_usage begin.");
+    LOG_INFO("gns,get_node_disk_usage begin.appid {}",_app->app_id);
     int app_relica_disk_usage = 0;
 
     if(_app == nullptr){
@@ -647,7 +647,7 @@ int copy_primary_operation_by_disk::get_node_disk_usage(const dsn::replication::
 
     const partition_set * primary_set = ns.partitions(_app->app_id,true);
     if(nullptr == primary_set || primary_set->empty()){
-       LOG_INFO("gns,get_node_disk_usage get primary set is null or empty, addr is {}.",ns.addr());
+       LOG_INFO("gns,get_node_disk_usage get primary set is null or empty, addr is {}.appid {}",ns.addr(),_app->app_id);
        return 0;
     }
 
