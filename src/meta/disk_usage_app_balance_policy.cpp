@@ -168,9 +168,6 @@ bool disk_usage_app_balance_policy::init(const dsn::replication::meta_view *glob
 
 void disk_usage_app_balance_policy::balance(bool checker, const meta_view *global_view, migration_list *list)
 {
-    LOG_INFO("here assert");
-    assert(1 < 0);
-
     LOG_INFO("why still run");
 
     //when min_replica_disk_usage > balance_threshold will not do balance
