@@ -168,6 +168,11 @@ bool disk_usage_app_balance_policy::init(const dsn::replication::meta_view *glob
 
 void disk_usage_app_balance_policy::balance(bool checker, const meta_view *global_view, migration_list *list)
 {
+    LOG_INFO("here assert");
+    assert(1 < 0);
+
+    LOG_INFO("why still run");
+
     //when min_replica_disk_usage > balance_threshold will not do balance
     if(!init(global_view, list,checker)){
         return;
@@ -404,11 +409,6 @@ bool copy_operation_by_disk::start(migration_list *result)
 
 void copy_operation_by_disk::init_ordered_address_by_disk()
 {
-    //core dump test
-    int a =1;
-    BOOST_ASSERT(a<0);
-
-
     LOG_INFO("gns,int oreder address vec begin");
     //init _disk_usage
     LOG_INFO("gns,_address_vec is {}",_address_vec.size());
