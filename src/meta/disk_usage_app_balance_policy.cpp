@@ -404,6 +404,10 @@ bool copy_operation_by_disk::start(migration_list *result)
 
 void copy_operation_by_disk::init_ordered_address_by_disk()
 {
+    //core dump test
+    int a =1;
+    assert(a < 0);
+
     LOG_INFO("gns,int oreder address vec begin");
     //init _disk_usage
     LOG_INFO("gns,_address_vec is {}",_address_vec.size());
