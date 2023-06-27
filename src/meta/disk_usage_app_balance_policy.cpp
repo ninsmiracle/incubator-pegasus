@@ -406,7 +406,8 @@ void copy_operation_by_disk::init_ordered_address_by_disk()
 {
     //core dump test
     int a =1;
-    assert(a < 0);
+    BOOST_ASSERT(a<0);
+
 
     LOG_INFO("gns,int oreder address vec begin");
     //init _disk_usage
