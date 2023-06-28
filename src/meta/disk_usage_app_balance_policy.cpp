@@ -199,7 +199,7 @@ void disk_usage_app_balance_policy::balance(bool checker, const meta_view *globa
                               std::placeholders::_2));
 }
 
-bool disk_usage_app_balance_policy::still_have_replicas_lower_than_average( const std::shared_ptr<app_state> &app,node_mapper nodes,replica_disk_usage_mapper replicas){
+bool disk_usage_app_balance_policy::still_have_replicas_lower_than_average( const std::shared_ptr<app_state> &app,node_mapper &nodes,replica_disk_usage_mapper &replicas){
     //todo:考虑磁盘平衡阈值  控制 can_continue 因为磁盘负载均衡没有走最大流图了，所以需要有这个方法
     //LOG_INFO("gns,replicas size is {}",replicas.size());
     int total_primary_disk_usage_of_this_app = 0;
@@ -257,7 +257,7 @@ bool disk_usage_app_balance_policy::primary_balance(const std::shared_ptr<app_st
     //move primary is useless for disk usage
     LOG_INFO("begin copy primary to make disk usage balance.appid {}",app->app_id);
     if (!only_move_primary) {
-        bool still_lower = still_have_replicas_lower_than_average(app,*_global_view->nodes,*_global_view->replicas);
+        bool still_lower = still_have_replicas_lower_than_average(app,*(_global_view->nodes),*(_global_view->replicas));
         LOG_INFO("gns:disk_usage_app_balance_policy::copy_primary outside.appid {}",app->app_id);
         ///原始逻辑中，第二个参数graph->have_less_than_average() 决定了 have_less_than_average ，间接决定了 can_continue,实际就是查看是否还有节点小于期望值
         bool copy_result = disk_usage_app_balance_policy::copy_primary(app,still_lower);
@@ -288,9 +288,9 @@ bool disk_usage_app_balance_policy::copy_secondary(const std::shared_ptr<app_sta
 {
     LOG_INFO("gns,begin to copy secondary");
     node_mapper &nodes = *(_global_view->nodes);
-    const app_mapper &apps = *_global_view->apps;
-    replica_disk_usage_mapper &replicas = *_global_view->replicas;
-    disk_total_usage_mapper &disks =  *_global_view->disks;
+    const app_mapper &apps = *(_global_view->apps);
+    replica_disk_usage_mapper &replicas = *(_global_view->replicas);
+    disk_total_usage_mapper &disks =  *(_global_view->disks);
 
     //get all replica disk usage of current app
     int total_disk_usage_of_this_app = 0;
