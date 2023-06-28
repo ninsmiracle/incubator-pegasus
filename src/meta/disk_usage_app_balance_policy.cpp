@@ -303,6 +303,8 @@ bool disk_usage_app_balance_policy::copy_secondary(const std::shared_ptr<app_sta
     }
 
     int replicas_low = total_disk_usage_of_this_app / _alive_nodes;
+    LOG_INFO("gns,copy_secondary.replicas_low {} , total_disk_usage_of_this_app {}, _alive_nodes {}",replicas_low,total_disk_usage_of_this_app,_alive_nodes);
+
 
     std::unique_ptr<copy_operation_by_disk> operation = std::make_unique<copy_secondary_operation_by_disk>(
         app, apps, nodes, replicas,disks,address_vec, address_id, replicas_low,_balance_threshold);
@@ -394,6 +396,7 @@ bool copy_operation_by_disk::start(migration_list *result)
             LOG_INFO("gns,begin to update_ordered_address_by_disk.appid {}",_app->app_id);
             update_ordered_address_by_disk(selected_pid);
         } else {
+            LOG_INFO("gns,selected gpid < 0.appid {}",_app->app_id);
             _ordered_address_by_disk.erase(--_ordered_address_by_disk.end());
         }
     }
@@ -520,6 +523,7 @@ dsn::gpid copy_operation_by_disk::select_max_load_gpid(const partition_set *part
     //std::string max_disk_tag = get_max_load_disk(ns.addr());
 
     int expectation_residual = _disk_usage[id_max] - _replicas_low;
+    LOG_INFO("expectation_residual are {}",expectation_residual);
     int max_replica_disk_usage = -1;
     gpid selected_pid(-1, -1);
         //find a largest partition in max load node
@@ -597,6 +601,10 @@ bool copy_primary_operation_by_disk::can_select(gpid pid, migration_list *result
     }
 
 
+    LOG_INFO("{}: copy primary. gpid({}.{}) has be choose",
+             _app->get_logname(),
+             pid.get_app_id(),
+             pid.get_partition_index());
     return pid.get_app_id() == _app->app_id && result->find(pid) == result->end();
 }
 
@@ -734,6 +742,12 @@ bool copy_secondary_operation_by_disk::can_select(dsn::gpid pid, dsn::replicatio
                  pid.get_partition_index());
        return false;
     }
+
+
+    LOG_INFO("{}: copy secondary. gpid({}.{}) has be choose",
+             _app->get_logname(),
+             pid.get_app_id(),
+             pid.get_partition_index());
     return true;
 }
 
