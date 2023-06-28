@@ -168,8 +168,6 @@ bool disk_usage_app_balance_policy::init(const dsn::replication::meta_view *glob
 
 void disk_usage_app_balance_policy::balance(bool checker, const meta_view *global_view, migration_list *list)
 {
-    LOG_INFO("why still run");
-
     //when min_replica_disk_usage > balance_threshold will not do balance
     if(!init(global_view, list,checker)){
         return;
@@ -259,9 +257,10 @@ bool disk_usage_app_balance_policy::primary_balance(const std::shared_ptr<app_st
     //move primary is useless for disk usage
     LOG_INFO("begin copy primary to make disk usage balance.appid {}",app->app_id);
     if (!only_move_primary) {
+        bool still_lower = still_have_replicas_lower_than_average(app,*_global_view->nodes,*_global_view->replicas);
         LOG_INFO("gns:disk_usage_app_balance_policy::copy_primary outside.appid {}",app->app_id);
         ///原始逻辑中，第二个参数graph->have_less_than_average() 决定了 have_less_than_average ，间接决定了 can_continue,实际就是查看是否还有节点小于期望值
-        bool copy_result = disk_usage_app_balance_policy::copy_primary(app, still_have_replicas_lower_than_average(app,*_global_view->nodes,*_global_view->replicas));
+        bool copy_result = disk_usage_app_balance_policy::copy_primary(app,still_lower);
         LOG_INFO("copy_result is ok.appid {}",app->app_id);
         LOG_INFO("copy_result*******,appid {}",app->app_id);
         return copy_result;
