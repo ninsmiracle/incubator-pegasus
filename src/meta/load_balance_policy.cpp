@@ -491,7 +491,9 @@ void load_balance_policy::number_nodes(const node_mapper &nodes)
 
     address_id.clear();
     address_vec.resize(_alive_nodes + 2);
+
     for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
+        LOG_INFO("gns,iter->first {},iter->second {}",iter->first,iter->second.addr() );
         CHECK(!iter->first.is_invalid() && !iter->second.addr().is_invalid(), "invalid address");
         CHECK(iter->second.alive(), "dead node");
 
