@@ -388,6 +388,7 @@ bool copy_operation_by_disk::start(migration_list *result)
         if (!can_continue()) {
             break;
         }
+        //select_partition父类子类对replica_low的尺度不一致
         LOG_INFO("gns,begin to select_partition.appid {}",_app->app_id);
         gpid selected_pid = select_partition(result);
         if (selected_pid.get_app_id() != -1) {
@@ -522,8 +523,9 @@ dsn::gpid copy_operation_by_disk::select_max_load_gpid(const partition_set *part
     ///如果考虑真实磁盘用量，最大真实用量的磁盘上可能没有当前表的分片，故这里不考虑真实用量
     //std::string max_disk_tag = get_max_load_disk(ns.addr());
 
-    int expectation_residual = _disk_usage[id_max] - _replicas_low;
-    LOG_INFO("expectation_residual are {}",expectation_residual);
+    int cur_replicas_low = get_replicas_low();
+    int expectation_residual = _disk_usage[id_max] - cur_replicas_low;
+    LOG_INFO("gns.in select_max_load_gpid.expectation_residual are {}",expectation_residual);
     int max_replica_disk_usage = -1;
     gpid selected_pid(-1, -1);
         //find a largest partition in max load node
@@ -539,7 +541,7 @@ dsn::gpid copy_operation_by_disk::select_max_load_gpid(const partition_set *part
             selected_pid = pid;
         }
     }
-    LOG_INFO("max node disk usage is {},select_max_load_gpid replicas_low {}",_disk_usage[id_max],_replicas_low);
+    LOG_INFO("max node disk usage is {},select_max_load_gpid.replicas_low {}",_disk_usage[id_max],cur_replicas_low);
 
     return selected_pid;
 }
@@ -632,7 +634,7 @@ bool copy_primary_operation_by_disk::can_continue()
     }
 
     int expectation_residual = _disk_usage[id_max] - _replicas_low;
-    LOG_INFO("In disk usage app balance policy,next step will copy at most {}MB in expectation,max disk usage node is {},replicas_low is {}",expectation_residual,_disk_usage[id_max],_replicas_low);
+    LOG_INFO("gns.primary can_continue,next step will copy at most {}MB in expectation,max disk usage node is {},replicas_low is {}",expectation_residual,_disk_usage[id_max],_replicas_low);
 
     gpid res_gpid = get_max_replica_disk_usage_smaller_than_expectation_residual(_address_vec[id_max],expectation_residual, true);
     //can not choose any replica in max disk load node in next step

@@ -94,6 +94,7 @@ public:
     dsn::gpid  get_max_replica_disk_usage_smaller_than_expectation_residual(dsn::rpc_address addr,int expectation_residual,bool only_primary);
 
     int get_partition_count(const node_state &ns) const{return 0;}; //无用的纯虚函数实现
+    virtual int get_replicas_low() const = 0;
 
 protected:
     //virtual int get_disk_usage(const node_state &ns) const = 0;
@@ -102,7 +103,7 @@ protected:
     std::set<int, std::function<bool(int left, int right)>> _ordered_address_by_disk;
     replica_disk_usage_mapper _replicas;
     disk_total_usage_mapper _disks;
-    int _replicas_low;
+    //int _replicas_low;
 
     FRIEND_TEST(copy_operation_by_disk, misc);
 };
@@ -128,6 +129,7 @@ private:
     bool can_select(gpid pid, migration_list *result);
     bool can_continue();
     int get_node_disk_usage(const dsn::replication::node_state &ns) const;
+    int get_replicas_low() const {return _replicas_low;}
 
     enum balance_type get_balance_type();
 
@@ -162,6 +164,7 @@ private:
     int get_node_disk_usage(const dsn::replication::node_state &ns) const;
     balance_type get_balance_type();
     bool only_copy_primary() { return false; }
+    int get_replicas_low() const {return _replicas_low;}
 
 
     int _replicas_low;
