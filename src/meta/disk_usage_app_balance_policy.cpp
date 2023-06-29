@@ -539,7 +539,7 @@ dsn::gpid copy_operation_by_disk::select_max_load_gpid(const partition_set *part
             selected_pid = pid;
         }
     }
-    LOG_INFO("max node disk usage is {},replicas_low {}",_disk_usage[id_max],_replicas_low);
+    LOG_INFO("max node disk usage is {},select_max_load_gpid replicas_low {}",_disk_usage[id_max],_replicas_low);
 
     return selected_pid;
 }
@@ -583,6 +583,7 @@ copy_primary_operation_by_disk::copy_primary_operation_by_disk(const std::shared
 {
     _have_lower_than_average = have_lower_than_average;
     _replicas_low = replicas_low;
+    LOG_INFO("gns: copy_primary_operation_by_disk replicas_low is {} ",_replicas_low);
     _disk_usage_balance_threshold = balance_threshold;
 }
 
@@ -614,8 +615,8 @@ bool copy_primary_operation_by_disk::can_continue()
     int id_min = *_ordered_address_by_disk.begin();
     //_replicas_low is Mathematical Expectation
     if (_have_lower_than_average && _disk_usage[id_min] >= _replicas_low) {
-       LOG_INFO("{}: stop the copy due to primaries on all nodes will reach low later.",
-                _app->get_logname());
+       LOG_INFO("{}: stop the copy due to primaries on all nodes will reach low later.can_continue replicas_low is {}",
+                _app->get_logname(),_replicas_low);
        return false;
     }
 
