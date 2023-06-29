@@ -103,7 +103,7 @@ protected:
     std::set<int, std::function<bool(int left, int right)>> _ordered_address_by_disk;
     replica_disk_usage_mapper _replicas;
     disk_total_usage_mapper _disks;
-    //int _replicas_low;
+    int _replicas_low;
 
     FRIEND_TEST(copy_operation_by_disk, misc);
 };
