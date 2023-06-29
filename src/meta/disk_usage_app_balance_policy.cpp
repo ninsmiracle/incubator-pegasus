@@ -380,8 +380,11 @@ bool copy_operation_by_disk::start(migration_list *result)
 {
     LOG_INFO("gns,begin to start.appid {}",_app->app_id);
     //calculate_disk_usage(_nodes,_apps,_replicas,_app->app_id,only_copy_primary(),/*out*/ _disk_usage);
-    init_ordered_address_by_disk();
-    //todo: 可能需要处理异常情况
+    //onebox测试中出现过挂掉节点后nodes和address_id的size不一致的情况
+    if(!init_ordered_address_by_disk()){
+        return false;
+    }
+
 
     while (true) {
         LOG_INFO("gns,begin to can_continue.appid {}",_app->app_id);
@@ -407,7 +410,7 @@ bool copy_operation_by_disk::start(migration_list *result)
 }
 
 
-void copy_operation_by_disk::init_ordered_address_by_disk()
+bool copy_operation_by_disk::init_ordered_address_by_disk()
 {
     LOG_INFO("gns,int oreder address vec begin");
     //init _disk_usage
@@ -415,6 +418,11 @@ void copy_operation_by_disk::init_ordered_address_by_disk()
     _disk_usage.resize(_address_vec.size(), 0);
 
     LOG_INFO("gns,init nodes size {}",_nodes.size());
+    if(_nodes.size() != _address_id.size()){
+        LOG_ERROR("nodes or address_id vector size have some trouble.Do balance later",_nodes.size());
+        return false;
+    }
+
     for (const auto &iter : _nodes) {
         LOG_INFO("gns,init _address_id size {},now is calculate ip {}",_address_id.size(),iter.first);
         auto id = _address_id.at(iter.first);
@@ -439,6 +447,7 @@ void copy_operation_by_disk::init_ordered_address_by_disk()
 
     _ordered_address_by_disk.swap(ordered_queue);
     LOG_INFO("gns,init_ordered_address_by_disk is ok");
+    return true;
 }
 
 void copy_operation_by_disk::copy_once(gpid selected_pid, migration_list *result)

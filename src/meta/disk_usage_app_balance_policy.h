@@ -82,7 +82,7 @@ public:
     ~copy_operation_by_disk() = default;
 
     bool start(migration_list *result);
-    void init_ordered_address_by_disk();
+    bool init_ordered_address_by_disk();
     void copy_once(gpid selected_pid, migration_list *result);
     void update_ordered_address_by_disk(dsn::gpid selected_gpid);
     const partition_set* get_all_partitions();
