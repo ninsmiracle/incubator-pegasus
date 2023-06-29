@@ -418,6 +418,7 @@ void copy_operation_by_disk::init_ordered_address_by_disk()
     for (const auto &iter : _nodes) {
         LOG_INFO("gns,init _address_id size {}",_address_id.size());
         auto id = _address_id.at(iter.first);
+        LOG_INFO("gns,init is is {}",id);
 
         _disk_usage[id] = get_node_disk_usage(iter.second);
         LOG_INFO("gns,now order id is {} disk_usage is {}",id,_disk_usage[id]);
