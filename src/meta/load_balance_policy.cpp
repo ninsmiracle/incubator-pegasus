@@ -724,8 +724,11 @@ void copy_replica_operation::update_ordered_address_ids()
 
 void copy_replica_operation::init_ordered_address_ids()
 {
+    LOG_INFO("old._address_vec is {}",_address_vec.size());
     _partition_counts.resize(_address_vec.size(), 0);
+    LOG_INFO("old._nodes is {}",_nodes.size());
     for (const auto &iter : _nodes) {
+        LOG_INFO("old._address_id is {}",_address_id.size());
         auto id = _address_id.at(iter.first);
         _partition_counts[id] = get_partition_count(iter.second);
     }

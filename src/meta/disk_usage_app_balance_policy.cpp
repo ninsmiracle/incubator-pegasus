@@ -348,7 +348,7 @@ bool disk_usage_app_balance_policy::copy_primary(const std::shared_ptr<app_state
     int primary_disk_replicas_low = total_primary_disk_usage_of_this_app / _alive_nodes;
     LOG_INFO("copy_primary: primary_disk_replicas_low is {}. appid {}",primary_disk_replicas_low,app->app_id);
 
-
+    LOG_INFO("gns.debug address_vec.size {},address_id.size {},nodes.size {}",address_vec.size(),address_id.size(),nodes.size());
     std::unique_ptr<copy_operation_by_disk> operation = std::make_unique<copy_primary_operation_by_disk>(
         app, apps, nodes,replicas,disks, address_vec, address_id, still_have_less_than_average, primary_disk_replicas_low,_balance_threshold);
     LOG_INFO("gns, copy_primary start.appid {}",app->app_id);
@@ -416,7 +416,7 @@ void copy_operation_by_disk::init_ordered_address_by_disk()
 
     LOG_INFO("gns,init nodes size {}",_nodes.size());
     for (const auto &iter : _nodes) {
-        LOG_INFO("gns,init _address_id size {}",_address_id.size());
+        LOG_INFO("gns,init _address_id size {},now is calculate ip {}",_address_id.size(),iter.first);
         auto id = _address_id.at(iter.first);
         LOG_INFO("gns,init is is {}",id);
 
