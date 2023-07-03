@@ -494,6 +494,7 @@ void load_balance_policy::number_nodes(const node_mapper &nodes)
 
     for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
         LOG_INFO("gns,iter->first {},iter->second {}",iter->first,iter->second.addr() );
+        //todo:when add a UNALIVE nodes to cluster and open disk_susage_app_balance_policy OR cluster_balance_policy,meta will coredump cause HOST_TYPE_INVALID
         CHECK(!iter->first.is_invalid() && !iter->second.addr().is_invalid(), "invalid address");
         CHECK(iter->second.alive(), "dead node");
 
