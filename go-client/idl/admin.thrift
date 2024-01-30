@@ -470,6 +470,18 @@ struct start_backup_app_response
     3:optional i64      backup_id;
 }
 
+struct cancel_backup_app_request
+{
+    1:i32                app_id;
+    2:i64    backup_id;
+}
+
+struct cancel_backup_app_response
+{
+    1:base.error_code    err;
+    2:string            hint_message;
+}
+
 struct backup_item
 {
     1:i64           backup_id;
@@ -744,6 +756,8 @@ service admin_client
     start_backup_app_response start_backup_app(1: start_backup_app_request req);
 
     query_backup_status_response query_backup_status(1: query_backup_status_request req);
+
+    cancel_backup_app_response cancel_backup_app(1: cancel_backup_app_request req);
 
     create_app_response restore_app(1: restore_app_request req);
 

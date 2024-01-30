@@ -139,9 +139,11 @@ func (p *PegasusCodec) String() string {
 // Usage:
 //
 // ```go
-//   RegisterRpcResultHandler("RPC_CLI_CLI_CALL_ACK", func() RpcResponseResult {
-//     return &RemoteCmdServiceCallCommandResult{Success: new(string)}
-//   })
+//
+//	RegisterRpcResultHandler("RPC_CLI_CLI_CALL_ACK", func() RpcResponseResult {
+//	  return &RemoteCmdServiceCallCommandResult{Success: new(string)}
+//	})
+//
 // ```
 func RegisterRPCResultHandler(responseAck string, handler func() RpcResponseResult) {
 	nameToResultMapLock.Lock()
@@ -234,6 +236,12 @@ var nameToResultMap = map[string]func() RpcResponseResult{
 	"RPC_CM_START_BACKUP_APP_ACK": func() RpcResponseResult {
 		return &admin.AdminClientStartBackupAppResult{
 			Success: admin.NewStartBackupAppResponse(),
+		}
+	},
+	//gns add
+	"RPC_CM_CANCEL_BACKUP_APP_ACK": func() RpcResponseResult {
+		return &admin.AdminClientCancelBackupAppResult{
+			Success: admin.NewCancelBackupAppResponse(),
 		}
 	},
 	"RPC_CM_QUERY_BACKUP_STATUS_ACK": func() RpcResponseResult {
