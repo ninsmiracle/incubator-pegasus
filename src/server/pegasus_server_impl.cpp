@@ -1379,12 +1379,28 @@ void pegasus_server_impl::on_clear_scanner(const int64_t &args) { _context_cache
         return ::dsn::ERR_LOCAL_APP_FAILURE;
     }
 
-    if (need_create_meta_cf) {
-        // Write meta data to meta CF according to manifest.
+    //force set data version to deal with compatibility problem
+    if(!_meta_store->try_to_get_data_version_from_meta_cf()){
         _meta_store->set_data_version(_pegasus_data_version);
-        _meta_store->set_last_flushed_decree(_last_committed_decree);
-        _meta_store->set_last_manual_compact_finish_time(last_manual_compact_finish_time);
+        ddebug_replica("Can not find data_verion in meta_cf. Set mainfest_data_version {} to meta_cf",_pegasus_data_version);
     }
+
+    if(!_meta_store->try_to_get_last_flushed_decree_from_meta_cf()){
+        _meta_store->set_last_flushed_decree(_last_committed_decree);
+        ddebug_replica("Can not find last_flushed_decree in meta_cf. Set mainfest_last_flushed_decree {} to meta_cf",_last_committed_decree);
+    }
+
+    if(!_meta_store->try_to_get_last_manual_compact_finish_time_from_meta_cf()){
+        _meta_store->set_last_manual_compact_finish_time(last_manual_compact_finish_time);
+        ddebug_replica("Can not find last_manual_compact_finish_time in meta_cf. Set mainfest_last_manual_compact_finish_time {} to meta_cf",last_manual_compact_finish_time);
+    }
+
+//    if (need_create_meta_cf) {
+//        // Write meta data to meta CF according to manifest.
+//        _meta_store->set_data_version(_pegasus_data_version);
+//        _meta_store->set_last_flushed_decree(_last_committed_decree);
+//        _meta_store->set_last_manual_compact_finish_time(last_manual_compact_finish_time);
+//    }
 
     // only enable filter after correct pegasus_data_version set
     _key_ttl_compaction_filter_factory->SetPegasusDataVersion(_pegasus_data_version);
