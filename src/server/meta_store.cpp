@@ -51,7 +51,7 @@ uint64_t meta_store::get_last_flushed_decree() const
     }
 }
 
-bool try_to_get_last_flushed_decree_from_meta_cf()
+bool meta_store::try_to_get_last_flushed_decree_from_meta_cf()
 {
     uint64_t last_flushed_decree = 0;
     auto ec = get_value_from_meta_cf(true, LAST_FLUSHED_DECREE, &last_flushed_decree);
@@ -74,7 +74,7 @@ uint32_t meta_store::get_data_version() const
     }
 }
 
-bool try_to_get_data_version_from_meta_cf()
+bool meta_store::try_to_get_data_version_from_meta_cf()
 {
     uint64_t pegasus_data_version = 0;
     auto ec = get_value_from_meta_cf(false, DATA_VERSION, &pegasus_data_version);
@@ -98,7 +98,7 @@ uint64_t meta_store::get_last_manual_compact_finish_time() const
     }
 }
 
-bool try_to_get_last_manual_compact_finish_time_from_meta_cf()
+bool meta_store::try_to_get_last_manual_compact_finish_time_from_meta_cf()
 {
     uint64_t last_manual_compact_finish_time = 0;
     auto ec = get_value_from_meta_cf(
