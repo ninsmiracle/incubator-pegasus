@@ -40,6 +40,8 @@
 
 namespace dsn {
 
+DSN_DECLARE_bool(enable_direct_io);
+
 native_linux_aio_provider::native_linux_aio_provider(disk_engine *disk) : aio_provider(disk) {}
 
 native_linux_aio_provider::~native_linux_aio_provider() {}
@@ -70,6 +72,14 @@ native_linux_aio_provider::open_write_file(const std::string &fname)
 
     if (s.IsNotFound()) {
         std::unique_ptr<rocksdb::WritableFile> cfile;
+        //use direct io or not
+        if(FLAGS_enable_direct_io){
+            rocksdb::EnvOptions().use_direct_writes = true;
+            LOG_DEBUG("file {} open write file WITH direct_io writes method",fname);
+        }else{
+            LOG_DEBUG("file {} open write file WITHOUT direct_io writes method",fname);
+        }
+
         s = dsn::utils::PegasusEnv(dsn::utils::FileDataType::kSensitive)
                 ->ReopenWritableFile(fname, &cfile, rocksdb::EnvOptions());
         if (!s.ok()) {
@@ -114,7 +124,17 @@ error_code native_linux_aio_provider::write(const aio_context &aio_ctx,
                                             /*out*/ uint64_t *processed_bytes)
 {
     rocksdb::Slice data((const char *)(aio_ctx.buffer), aio_ctx.buffer_size);
+
+    //todo gns : del useless code later
+    if(FLAGS_enable_direct_io){
+        LOG_DEBUG("direct_io writes");
+    }else{
+        LOG_DEBUG("normal_io writes");
+    }
+
     auto s = aio_ctx.dfile->wfile()->Write(aio_ctx.file_offset, data);
+
+
     if (!s.ok()) {
         LOG_ERROR("write file failed, err = {}", s.ToString());
         return ERR_FILE_OPERATION_FAILED;
