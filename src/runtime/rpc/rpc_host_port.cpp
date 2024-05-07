@@ -69,7 +69,7 @@ host_port host_port::from_address(rpc_address addr)
         break;
     }
 
-    // Now is_invalid() return false.
+    // Now is valid.
     hp._type = addr.type();
     return hp;
 }
@@ -95,7 +95,7 @@ host_port host_port::from_string(const std::string &host_port_str)
         return hp;
     }
 
-    // Now is_invalid() return false.
+    // Now is valid.
     hp._type = HOST_TYPE_IPV4;
     return hp;
 }
@@ -214,15 +214,6 @@ error_s host_port::resolve_addresses(std::vector<rpc_address> &addresses) const
 
     addresses = std::move(result_addresses);
     return error_s::ok();
-}
-
-void host_port::fill_host_ports_from_addresses(const std::vector<rpc_address> &addr_v,
-                                               std::vector<host_port> &hp_v)
-{
-    CHECK(hp_v.empty(), "optional host_port should be empty!");
-    for (const auto &addr : addr_v) {
-        hp_v.emplace_back(host_port::from_address(addr));
-    }
 }
 
 } // namespace dsn

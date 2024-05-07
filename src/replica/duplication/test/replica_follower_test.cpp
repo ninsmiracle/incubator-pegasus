@@ -32,7 +32,6 @@
 #include "nfs/nfs_node.h"
 #include "replica/duplication/replica_follower.h"
 #include "replica/test/mock_utils.h"
-#include "runtime/rpc/dns_resolver.h"
 #include "runtime/rpc/rpc_address.h"
 #include "runtime/rpc/rpc_host_port.h"
 #include "runtime/task/task_tracker.h"
@@ -217,37 +216,36 @@ TEST_P(replica_follower_test, test_update_master_replica_config)
 
     query_cfg_response resp;
     ASSERT_EQ(update_master_replica_config(follower, resp), ERR_INCONSISTENT_STATE);
-    ASSERT_EQ(master_replica_config(follower).primary, rpc_address::s_invalid_address);
-    ASSERT_EQ(master_replica_config(follower).hp_primary, host_port::s_invalid_host_port);
+    ASSERT_FALSE(master_replica_config(follower).primary);
+    ASSERT_FALSE(master_replica_config(follower).hp_primary);
 
     resp.partition_count = 100;
     ASSERT_EQ(update_master_replica_config(follower, resp), ERR_INCONSISTENT_STATE);
-    ASSERT_EQ(master_replica_config(follower).primary, rpc_address::s_invalid_address);
-    ASSERT_EQ(master_replica_config(follower).hp_primary, host_port::s_invalid_host_port);
+    ASSERT_FALSE(master_replica_config(follower).primary);
+    ASSERT_FALSE(master_replica_config(follower).hp_primary);
 
     resp.partition_count = _app_info.partition_count;
     partition_configuration p;
     resp.partitions.emplace_back(p);
     resp.partitions.emplace_back(p);
     ASSERT_EQ(update_master_replica_config(follower, resp), ERR_INVALID_DATA);
-    ASSERT_EQ(master_replica_config(follower).primary, rpc_address::s_invalid_address);
-    ASSERT_EQ(master_replica_config(follower).hp_primary, host_port::s_invalid_host_port);
+    ASSERT_FALSE(master_replica_config(follower).primary);
+    ASSERT_FALSE(master_replica_config(follower).hp_primary);
 
     resp.partitions.clear();
     p.pid = gpid(2, 100);
     resp.partitions.emplace_back(p);
     ASSERT_EQ(update_master_replica_config(follower, resp), ERR_INCONSISTENT_STATE);
-    ASSERT_EQ(master_replica_config(follower).primary, rpc_address::s_invalid_address);
-    ASSERT_EQ(master_replica_config(follower).hp_primary, host_port::s_invalid_host_port);
+    ASSERT_FALSE(master_replica_config(follower).primary);
+    ASSERT_FALSE(master_replica_config(follower).hp_primary);
 
     resp.partitions.clear();
-    p.primary = rpc_address::s_invalid_address;
-    p.__set_hp_primary(host_port::s_invalid_host_port);
+    RESET_IP_AND_HOST_PORT(p, primary);
     p.pid = gpid(2, 1);
     resp.partitions.emplace_back(p);
     ASSERT_EQ(update_master_replica_config(follower, resp), ERR_INVALID_STATE);
-    ASSERT_EQ(master_replica_config(follower).primary, rpc_address::s_invalid_address);
-    ASSERT_EQ(master_replica_config(follower).hp_primary, host_port::s_invalid_host_port);
+    ASSERT_FALSE(master_replica_config(follower).primary);
+    ASSERT_FALSE(master_replica_config(follower).hp_primary);
 
     resp.partitions.clear();
     p.pid = gpid(2, 1);
@@ -256,13 +254,8 @@ TEST_P(replica_follower_test, test_update_master_replica_config)
     const host_port secondary1("localhost", 34802);
     const host_port secondary2("localhost", 34803);
 
-    p.primary = dsn::dns_resolver::instance().resolve_address(primary);
-    p.secondaries.emplace_back(dsn::dns_resolver::instance().resolve_address(secondary1));
-    p.secondaries.emplace_back(dsn::dns_resolver::instance().resolve_address(secondary2));
-    p.__set_hp_primary(primary);
-    p.__set_hp_secondaries({});
-    p.hp_secondaries.emplace_back(secondary1);
-    p.hp_secondaries.emplace_back(secondary2);
+    SET_IP_AND_HOST_PORT_BY_DNS(p, primary, primary);
+    SET_IPS_AND_HOST_PORTS_BY_DNS(p, secondaries, secondary1, secondary2);
     resp.partitions.emplace_back(p);
     ASSERT_EQ(update_master_replica_config(follower, resp), ERR_OK);
     ASSERT_EQ(master_replica_config(follower).primary, p.primary);
@@ -284,8 +277,7 @@ TEST_P(replica_follower_test, test_nfs_copy_checkpoint)
 
     auto resp = learn_response();
     const host_port learnee("localhost", 34801);
-    resp.learnee = dsn::dns_resolver::instance().resolve_address(learnee);
-    resp.__set_hp_learnee(learnee);
+    SET_IP_AND_HOST_PORT_BY_DNS(resp, learnee, learnee);
 
     std::string dest = utils::filesystem::path_combine(
         _mock_replica->dir(), duplication_constants::kDuplicationCheckpointRootDir);

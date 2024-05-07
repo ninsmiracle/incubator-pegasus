@@ -304,11 +304,10 @@ void partition_resolver_simple::query_config_reply(error_code err,
             for (auto it = resp.partitions.begin(); it != resp.partitions.end(); ++it) {
                 auto &new_config = *it;
 
-                LOG_DEBUG_PREFIX("query config reply, gpid = {}, ballot = {}, primary = {}({})",
+                LOG_DEBUG_PREFIX("query config reply, gpid = {}, ballot = {}, primary = {}",
                                  new_config.pid,
                                  new_config.ballot,
-                                 new_config.hp_primary,
-                                 new_config.primary);
+                                 FMT_HOST_PORT_AND_IP(new_config, primary));
 
                 auto it2 = _config_cache.find(new_config.pid.get_partition_index());
                 if (it2 == _config_cache.end()) {
@@ -417,13 +416,13 @@ host_port partition_resolver_simple::get_host_port(const partition_configuration
 {
     if (_app_is_stateful) {
         return config.hp_primary;
-    } else {
-        if (config.hp_last_drops.size() == 0) {
-            return host_port();
-        } else {
-            return config.hp_last_drops[rand::next_u32(0, config.last_drops.size() - 1)];
-        }
     }
+
+    if (config.hp_last_drops.empty()) {
+        return host_port();
+    }
+
+    return config.hp_last_drops[rand::next_u32(0, config.last_drops.size() - 1)];
 }
 
 error_code partition_resolver_simple::get_host_port(int partition_index, /*out*/ host_port &hp)
@@ -439,7 +438,7 @@ error_code partition_resolver_simple::get_host_port(int partition_index, /*out*/
                 return ERR_CHILD_NOT_READY;
             }
             hp = get_host_port(it->second->config);
-            if (hp.is_invalid()) {
+            if (!hp) {
                 return ERR_IO_PENDING;
             } else {
                 return ERR_OK;

@@ -336,7 +336,7 @@ bool app_disk(command_executor *e, shell_context *sc, arguments args)
     for (int i = 0; i < partitions.size(); i++) {
         const dsn::partition_configuration &p = partitions[i];
         int replica_count = 0;
-        if (!p.hp_primary.is_invalid()) {
+        if (p.hp_primary) {
             replica_count++;
         }
         replica_count += p.hp_secondaries.size();
@@ -347,7 +347,7 @@ bool app_disk(command_executor *e, shell_context *sc, arguments args)
             replica_count_str = oss.str();
         }
         std::string primary_str("-");
-        if (!p.hp_primary.is_invalid()) {
+        if (p.hp_primary) {
             bool disk_found = false;
             double disk_value = 0;
             auto f1 = disk_map.find(p.hp_primary);
@@ -368,10 +368,10 @@ bool app_disk(command_executor *e, shell_context *sc, arguments args)
             auto f3 = count_map.find(p.hp_primary);
             if (f3 != count_map.end()) {
                 auto &sub_map = f3->second;
-                auto f3 = sub_map.find(p.pid.get_partition_index());
-                if (f3 != sub_map.end()) {
+                auto f4 = sub_map.find(p.pid.get_partition_index());
+                if (f4 != sub_map.end()) {
                     count_found = true;
-                    count_value = f3->second;
+                    count_value = f4->second;
                 }
             }
             std::stringstream oss;

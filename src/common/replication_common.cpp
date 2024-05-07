@@ -27,8 +27,6 @@
 #include "common/replication_common.h"
 
 #include <string.h>
-// IWYU pragma: no_include <ext/alloc_traits.h>
-#include <algorithm>
 #include <fstream>
 #include <memory>
 
@@ -36,6 +34,7 @@
 #include "common/replication_other_types.h"
 #include "dsn.layer2_types.h"
 #include "fmt/core.h"
+#include "runtime/rpc/dns_resolver.h" // IWYU pragma: keep
 #include "runtime/rpc/rpc_address.h"
 #include "runtime/service_app.h"
 #include "utils/config_api.h"
@@ -43,6 +42,7 @@
 #include "utils/flags.h"
 #include "utils/fmt_logging.h"
 #include "utils/strings.h"
+#include "utils/utils.h"
 
 DSN_DEFINE_bool(replication, duplication_enabled, true, "is duplication enabled");
 
@@ -171,23 +171,22 @@ int32_t replication_options::app_mutation_2pc_min_replica_count(int32_t app_max_
                                                    /*out*/ replica_configuration &replica_config)
 {
     replica_config.pid = partition_config.pid;
-    replica_config.primary = partition_config.primary;
     replica_config.ballot = partition_config.ballot;
     replica_config.learner_signature = invalid_signature;
-    replica_config.__set_hp_primary(partition_config.hp_primary);
+    SET_OBJ_IP_AND_HOST_PORT(replica_config, primary, partition_config, primary);
 
     if (node == partition_config.hp_primary) {
         replica_config.status = partition_status::PS_PRIMARY;
         return true;
-    } else if (std::find(partition_config.hp_secondaries.begin(),
-                         partition_config.hp_secondaries.end(),
-                         node) != partition_config.hp_secondaries.end()) {
+    }
+
+    if (utils::contains(partition_config.hp_secondaries, node)) {
         replica_config.status = partition_status::PS_SECONDARY;
         return true;
-    } else {
-        replica_config.status = partition_status::PS_INACTIVE;
-        return false;
     }
+
+    replica_config.status = partition_status::PS_INACTIVE;
+    return false;
 }
 
 bool replica_helper::load_servers_from_config(const std::string &section,

@@ -841,16 +841,15 @@ void replica_stub::on_config_proposal(const configuration_update_request &propos
                     proposal.config.pid,
                     _primary_host_port_cache,
                     enum_to_string(proposal.type),
-                    proposal.node);
+                    FMT_HOST_PORT_AND_IP(proposal, node));
         return;
     }
 
-    LOG_INFO("{}@{}: received config proposal {} for {}({})",
+    LOG_INFO("{}@{}: received config proposal {} for {}",
              proposal.config.pid,
              _primary_host_port_cache,
              enum_to_string(proposal.type),
-             proposal.hp_node,
-             proposal.node);
+             FMT_HOST_PORT_AND_IP(proposal, node));
 
     replica_ptr rep = get_replica(proposal.config.pid);
     if (rep == nullptr) {
@@ -975,7 +974,7 @@ void replica_stub::on_query_app_info(query_app_info_rpc rpc)
     const query_app_info_request &req = rpc.request();
     query_app_info_response &resp = rpc.response();
 
-    LOG_INFO("got query app info request from ({})", req.meta_server);
+    LOG_INFO("got query app info request from ({})", FMT_HOST_PORT_AND_IP(req, meta_server));
     resp.err = dsn::ERR_OK;
     std::set<app_id> visited_apps;
     {
@@ -1102,12 +1101,11 @@ void replica_stub::on_group_check(group_check_rpc rpc)
         return;
     }
 
-    LOG_INFO("{}@{}: received group check, primary = {}({}), ballot = {}, status = {}, "
+    LOG_INFO("{}@{}: received group check, primary = {}, ballot = {}, status = {}, "
              "last_committed_decree = {}",
              request.config.pid,
              _primary_host_port_cache,
-             request.config.hp_primary,
-             request.config.primary,
+             FMT_HOST_PORT_AND_IP(request.config, primary),
              request.config.ballot,
              enum_to_string(request.config.status),
              request.last_committed_decree);
@@ -1166,20 +1164,18 @@ void replica_stub::on_learn_completion_notification(learn_completion_notificatio
 void replica_stub::on_add_learner(const group_check_request &request)
 {
     if (!is_connected()) {
-        LOG_WARNING("{}@{}: received add learner, primary = {}({}), not connected, ignore",
+        LOG_WARNING("{}@{}: received add learner, primary = {}, not connected, ignore",
                     request.config.pid,
                     _primary_host_port_cache,
-                    request.config.hp_primary,
-                    request.config.primary);
+                    FMT_HOST_PORT_AND_IP(request.config, primary));
         return;
     }
 
-    LOG_INFO("{}@{}: received add learner, primary = {}({}), ballot = {}, status = {}, "
+    LOG_INFO("{}@{}: received add learner, primary = {}, ballot = {}, status = {}, "
              "last_committed_decree = {}",
              request.config.pid,
              _primary_host_port_cache,
-             request.config.hp_primary,
-             request.config.primary,
+             FMT_HOST_PORT_AND_IP(request.config, primary),
              request.config.ballot,
              enum_to_string(request.config.status),
              request.last_committed_decree);
@@ -1258,8 +1254,7 @@ void replica_stub::query_configuration_by_node()
     dsn::message_ex *msg = dsn::message_ex::create_request(RPC_CM_CONFIG_SYNC);
 
     configuration_query_by_node_request req;
-    req.node = primary_address();
-    req.__set_hp_node(_primary_host_port);
+    SET_IP_AND_HOST_PORT(req, node, primary_address(), _primary_host_port);
 
     // TODO: send stored replicas may cost network, we shouldn't config the frequency
     get_local_replicas(req.stored_replicas);
@@ -1302,7 +1297,7 @@ void replica_stub::on_node_query_reply(error_code err,
 {
     LOG_INFO("query node partitions replied, err = {}", err);
 
-    zauto_lock l(_state_lock);
+    zauto_lock sl(_state_lock);
     _config_query_task = nullptr;
     if (err != ERR_OK) {
         if (_state == NS_Connecting) {
@@ -1347,7 +1342,7 @@ void replica_stub::on_node_query_reply(error_code err,
 
         replicas rs;
         {
-            zauto_read_lock l(_replicas_lock);
+            zauto_read_lock rl(_replicas_lock);
             rs = _replicas;
         }
 
@@ -1466,13 +1461,11 @@ void replica_stub::remove_replica_on_meta_server(const app_info &info,
     request->info = info;
     request->config = config;
     request->config.ballot++;
-    request->node = primary_address();
-    request->__set_hp_node(_primary_host_port);
+    SET_IP_AND_HOST_PORT(*request, node, primary_address(), _primary_host_port);
     request->type = config_type::CT_DOWNGRADE_TO_INACTIVE;
 
     if (_primary_host_port == config.hp_primary) {
-        request->config.primary.set_invalid();
-        request->config.hp_primary.reset();
+        RESET_IP_AND_HOST_PORT(request->config, primary);
     } else if (replica_helper::remove_node(primary_address(), request->config.secondaries) &&
                replica_helper::remove_node(_primary_host_port, request->config.hp_secondaries)) {
     } else {
@@ -1490,7 +1483,7 @@ void replica_stub::on_meta_server_disconnected()
 {
     LOG_INFO("meta server disconnected");
 
-    zauto_lock l(_state_lock);
+    zauto_lock sl(_state_lock);
     if (NS_Disconnected == _state)
         return;
 
@@ -1498,7 +1491,7 @@ void replica_stub::on_meta_server_disconnected()
 
     replicas rs;
     {
-        zauto_read_lock l(_replicas_lock);
+        zauto_read_lock rl(_replicas_lock);
         rs = _replicas;
     }
 
@@ -2747,12 +2740,11 @@ void replica_stub::on_group_bulk_load(group_bulk_load_rpc rpc)
     const group_bulk_load_request &request = rpc.request();
     group_bulk_load_response &response = rpc.response();
 
-    LOG_INFO("[{}@{}]: received group bulk load request, primary = {}({}), ballot = {}, "
+    LOG_INFO("[{}@{}]: received group bulk load request, primary = {}, ballot = {}, "
              "meta_bulk_load_status = {}",
              request.config.pid,
              _primary_host_port_cache,
-             request.config.hp_primary,
-             request.config.primary,
+             FMT_HOST_PORT_AND_IP(request.config, primary),
              request.config.ballot,
              enum_to_string(request.meta_bulk_load_status));
 

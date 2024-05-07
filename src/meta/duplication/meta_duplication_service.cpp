@@ -361,9 +361,11 @@ void meta_duplication_service::duplication_sync(duplication_sync_rpc rpc)
     auto &response = rpc.response();
     response.err = ERR_OK;
 
-    node_state *ns = get_node_state(_state->_nodes, host_port::from_address(request.node), false);
+    host_port src_hp;
+    GET_HOST_PORT(request, node, src_hp);
+    const auto *ns = get_node_state(_state->_nodes, src_hp, false);
     if (ns == nullptr) {
-        LOG_WARNING("node({}) is not found in meta server", request.node);
+        LOG_WARNING("node({}) is not found in meta server", FMT_HOST_PORT_AND_IP(request, node));
         response.err = ERR_OBJECT_NOT_FOUND;
         return;
     }
@@ -518,17 +520,8 @@ void meta_duplication_service::check_follower_app_if_create_completed(
                           const host_port secondary2("localhost", 34803);
 
                           partition_configuration p;
-                          p.primary = dsn::dns_resolver::instance().resolve_address(primary);
-                          p.secondaries.emplace_back(
-                              dsn::dns_resolver::instance().resolve_address(secondary1));
-                          p.secondaries.emplace_back(
-                              dsn::dns_resolver::instance().resolve_address(secondary2));
-
-                          p.__set_hp_primary(primary);
-                          p.__set_hp_secondaries({});
-                          p.hp_secondaries.emplace_back(secondary1);
-                          p.hp_secondaries.emplace_back(secondary2);
-
+                          SET_IP_AND_HOST_PORT_BY_DNS(p, primary, primary);
+                          SET_IPS_AND_HOST_PORTS_BY_DNS(p, secondaries, secondary1, secondary2);
                           resp.partitions.emplace_back(p);
                       }
                   });
@@ -541,7 +534,7 @@ void meta_duplication_service::check_follower_app_if_create_completed(
                           query_err = ERR_INCONSISTENT_STATE;
                       } else {
                           for (const auto &partition : resp.partitions) {
-                              if (partition.hp_primary.is_invalid()) {
+                              if (!partition.hp_primary) {
                                   query_err = ERR_INACTIVE_STATE;
                                   break;
                               }
@@ -552,7 +545,7 @@ void meta_duplication_service::check_follower_app_if_create_completed(
                               }
 
                               for (const auto &secondary : partition.hp_secondaries) {
-                                  if (secondary.is_invalid()) {
+                                  if (!secondary) {
                                       query_err = ERR_INACTIVE_STATE;
                                       break;
                                   }

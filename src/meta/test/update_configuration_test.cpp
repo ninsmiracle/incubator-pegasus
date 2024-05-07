@@ -66,6 +66,7 @@
 #include "utils/filesystem.h"
 #include "utils/flags.h"
 #include "utils/fmt_logging.h"
+#include "utils/utils.h"
 #include "utils/zlocks.h"
 
 DSN_DECLARE_int32(node_live_percentage_threshold_for_update);
@@ -105,35 +106,32 @@ public:
         switch (update_req->type) {
         case config_type::CT_ASSIGN_PRIMARY:
         case config_type::CT_UPGRADE_TO_PRIMARY:
-            pc.primary = update_req->node;
-            pc.__set_hp_primary(update_req->hp_node);
+            SET_OBJ_IP_AND_HOST_PORT(pc, primary, *update_req, node);
             replica_helper::remove_node(update_req->node, pc.secondaries);
             replica_helper::remove_node(update_req->hp_node, pc.hp_secondaries);
             break;
 
         case config_type::CT_ADD_SECONDARY:
         case config_type::CT_ADD_SECONDARY_FOR_LB:
-            pc.secondaries.push_back(update_req->node);
-            pc.hp_secondaries.push_back(update_req->hp_node);
+            ADD_IP_AND_HOST_PORT(pc, secondaries, update_req->node, update_req->hp_node);
             update_req->type = config_type::CT_UPGRADE_TO_SECONDARY;
             break;
 
         case config_type::CT_REMOVE:
         case config_type::CT_DOWNGRADE_TO_INACTIVE:
             if (update_req->hp_node == pc.hp_primary) {
-                pc.primary.set_invalid();
-                pc.hp_primary.reset();
+                CHECK_EQ(update_req->node, pc.primary);
+                RESET_IP_AND_HOST_PORT(pc, primary);
             } else {
+                CHECK_NE(update_req->node, pc.primary);
                 replica_helper::remove_node(update_req->node, pc.secondaries);
                 replica_helper::remove_node(update_req->hp_node, pc.hp_secondaries);
             }
             break;
 
         case config_type::CT_DOWNGRADE_TO_SECONDARY:
-            pc.secondaries.push_back(pc.primary);
-            pc.primary.set_invalid();
-            pc.hp_secondaries.push_back(pc.hp_primary);
-            pc.hp_primary.reset();
+            ADD_IP_AND_HOST_PORT(pc, secondaries, pc.primary, pc.hp_primary);
+            RESET_IP_AND_HOST_PORT(pc, primary);
             break;
         default:
             break;
@@ -163,7 +161,7 @@ public:
     {
         action.type = config_type::CT_INVALID;
         const dsn::partition_configuration &pc = *get_config(*view.apps, gpid);
-        if (!pc.hp_primary.is_invalid() && pc.hp_secondaries.size() == 2)
+        if (pc.hp_primary && pc.hp_secondaries.size() == 2)
             return pc_status::healthy;
         return pc_status::ill;
     }
@@ -247,51 +245,46 @@ void meta_service_test_app::update_configuration_test()
 
     ss->_all_apps.emplace(1, app);
 
-    std::vector<std::pair<dsn::host_port, dsn::rpc_address>> nodes;
+    std::vector<dsn::host_port> nodes;
     generate_node_list(nodes, 4, 4);
 
     dsn::partition_configuration &pc0 = app->partitions[0];
-    pc0.primary = nodes[0].second;
-    pc0.__set_hp_primary(nodes[0].first);
-    pc0.secondaries = {nodes[1].second, nodes[2].second};
-    pc0.__set_hp_secondaries({nodes[1].first, nodes[2].first});
+    SET_IP_AND_HOST_PORT_BY_DNS(pc0, primary, nodes[0]);
+    SET_IPS_AND_HOST_PORTS_BY_DNS(pc0, secondaries, nodes[1], nodes[2]);
     pc0.ballot = 3;
 
     dsn::partition_configuration &pc1 = app->partitions[1];
-    pc1.primary = nodes[1].second;
-    pc1.__set_hp_primary(nodes[1].first);
-    pc1.secondaries = {nodes[0].second, nodes[2].second};
-    pc1.__set_hp_secondaries({nodes[0].first, nodes[2].first});
+    SET_IP_AND_HOST_PORT_BY_DNS(pc1, primary, nodes[1]);
+    SET_IPS_AND_HOST_PORTS_BY_DNS(pc1, secondaries, nodes[0], nodes[2]);
     pc1.ballot = 3;
 
     ss->sync_apps_to_remote_storage();
     ASSERT_TRUE(ss->spin_wait_staging(30));
     ss->initialize_node_state();
-    svc->set_node_state({nodes[0].first, nodes[1].first, nodes[2].first}, true);
+    svc->set_node_state({nodes[0], nodes[1], nodes[2]}, true);
     svc->_started = true;
 
     // test remove primary
     state_validator validator1 = [pc0](const app_mapper &apps) {
         const dsn::partition_configuration *pc = get_config(apps, pc0.pid);
         return pc->ballot == pc0.ballot + 2 && pc->hp_secondaries.size() == 1 &&
-               std::find(pc0.hp_secondaries.begin(), pc0.hp_secondaries.end(), pc->hp_primary) !=
-                   pc0.hp_secondaries.end();
+               utils::contains(pc0.hp_secondaries, pc->hp_primary);
     };
 
     // test kickoff secondary
-    auto hp = nodes[0].first;
+    const auto &hp = nodes[0];
     state_validator validator2 = [pc1, hp](const app_mapper &apps) {
         const dsn::partition_configuration *pc = get_config(apps, pc1.pid);
         return pc->ballot == pc1.ballot + 1 && pc->hp_secondaries.size() == 1 &&
                pc->hp_secondaries.front() != hp;
     };
 
-    svc->set_node_state({nodes[0].first}, false);
+    svc->set_node_state({nodes[0]}, false);
     ASSERT_TRUE(wait_state(ss, validator1, 30));
     ASSERT_TRUE(wait_state(ss, validator2, 30));
 
     // test add secondary
-    svc->set_node_state({nodes[3].first}, true);
+    svc->set_node_state({nodes[3]}, true);
     state_validator validator3 = [pc0](const app_mapper &apps) {
         const dsn::partition_configuration *pc = get_config(apps, pc0.pid);
         return pc->ballot == pc0.ballot + 1 && pc->hp_secondaries.size() == 2;
@@ -329,41 +322,33 @@ void meta_service_test_app::adjust_dropped_size()
 
     ss->_all_apps.emplace(1, app);
 
-    std::vector<std::pair<dsn::host_port, dsn::rpc_address>> nodes;
+    std::vector<dsn::host_port> nodes;
     generate_node_list(nodes, 10, 10);
 
     // first, the replica is healthy, and there are 2 dropped
     dsn::partition_configuration &pc = app->partitions[0];
-    pc.primary = nodes[0].second;
-    pc.__set_hp_primary(nodes[0].first);
-    pc.secondaries = {nodes[1].second, nodes[2].second};
-    pc.__set_hp_secondaries({nodes[1].first, nodes[2].first});
+    SET_IP_AND_HOST_PORT_BY_DNS(pc, primary, nodes[0]);
+    SET_IPS_AND_HOST_PORTS_BY_DNS(pc, secondaries, nodes[1], nodes[2]);
     pc.ballot = 10;
 
     config_context &cc = *get_config_context(ss->_all_apps, pc.pid);
     cc.dropped = {
-        dropped_replica{nodes[3].first, dropped_replica::INVALID_TIMESTAMP, 7, 11, 14},
-        dropped_replica{nodes[4].first, 20, invalid_ballot, invalid_decree, invalid_decree},
+        dropped_replica{nodes[3], dropped_replica::INVALID_TIMESTAMP, 7, 11, 14},
+        dropped_replica{nodes[4], 20, invalid_ballot, invalid_decree, invalid_decree},
     };
 
     ss->sync_apps_to_remote_storage();
 
-    std::vector<dsn::host_port> hps;
-    for (const auto &p : nodes) {
-        hps.emplace_back(p.first);
-    }
-    generate_node_mapper(ss->_nodes, ss->_all_apps, hps);
+    generate_node_mapper(ss->_nodes, ss->_all_apps, nodes);
 
     // then we receive a request for upgrade a node to secondary
     std::shared_ptr<configuration_update_request> req =
         std::make_shared<configuration_update_request>();
     req->config = pc;
     req->config.ballot++;
-    req->config.secondaries.push_back(nodes[5].second);
-    req->config.__set_hp_secondaries({nodes[5].first});
+    SET_IPS_AND_HOST_PORTS_BY_DNS(req->config, secondaries, nodes[5]);
     req->info = info;
-    req->node = nodes[5].second;
-    req->__set_hp_node(nodes[5].first);
+    SET_IP_AND_HOST_PORT_BY_DNS(*req, node, nodes[5]);
     req->type = config_type::CT_UPGRADE_TO_SECONDARY;
     call_update_configuration(svc.get(), req);
 
@@ -372,8 +357,7 @@ void meta_service_test_app::adjust_dropped_size()
     // then receive a config_sync request fro nodes[4], which has less data than node[3]
     std::shared_ptr<configuration_query_by_node_request> req2 =
         std::make_shared<configuration_query_by_node_request>();
-    req2->node = nodes[4].second;
-    req2->__set_hp_node(nodes[4].first);
+    SET_IP_AND_HOST_PORT_BY_DNS(*req2, node, nodes[4]);
 
     replica_info rep_info;
     rep_info.pid = pc.pid;
@@ -393,7 +377,7 @@ void meta_service_test_app::adjust_dropped_size()
         dropped_replica &d = cc.dropped[0];
         if (d.time != dropped_replica::INVALID_TIMESTAMP)
             return false;
-        if (d.node != nodes[4].first)
+        if (d.node != nodes[4])
             return false;
         if (d.last_committed_decree != rep_info.last_committed_decree)
             return false;
@@ -429,13 +413,8 @@ void meta_service_test_app::apply_balancer_test()
     meta_svc->_balancer.reset(new greedy_load_balancer(meta_svc.get()));
 
     // initialize data structure
-    std::vector<std::pair<dsn::host_port, dsn::rpc_address>> node_list;
-    generate_node_list(node_list, 5, 10);
-
     std::vector<dsn::host_port> hps;
-    for (const auto &p : node_list) {
-        hps.emplace_back(p.first);
-    }
+    generate_node_list(hps, 5, 10);
 
     server_state *ss = meta_svc->_state.get();
     generate_apps(ss->_all_apps, hps, 5, 5, std::pair<uint32_t, uint32_t>(2, 5), false);
@@ -506,7 +485,7 @@ void meta_service_test_app::cannot_run_balancer_test()
     svc->_balancer.reset(new dummy_balancer(svc.get()));
     svc->_partition_guardian.reset(new dummy_partition_guardian(svc.get()));
 
-    std::vector<std::pair<dsn::host_port, dsn::rpc_address>> nodes;
+    std::vector<dsn::host_port> nodes;
     generate_node_list(nodes, 10, 10);
 
     dsn::app_info info;
@@ -525,19 +504,12 @@ void meta_service_test_app::cannot_run_balancer_test()
     svc->_state->_table_metric_entities.create_entity(info.app_id, info.partition_count);
 
     dsn::partition_configuration &pc = the_app->partitions[0];
-    pc.primary = nodes[0].second;
-    pc.__set_hp_primary(nodes[0].first);
-    pc.secondaries = {nodes[1].second, nodes[2].second};
-    pc.__set_hp_secondaries({nodes[1].first, nodes[2].first});
-
-    std::vector<dsn::host_port> hps;
-    for (const auto &p : nodes) {
-        hps.emplace_back(p.first);
-    }
+    SET_IP_AND_HOST_PORT_BY_DNS(pc, primary, nodes[0]);
+    SET_IPS_AND_HOST_PORTS_BY_DNS(pc, secondaries, nodes[1], nodes[2]);
 
 #define REGENERATE_NODE_MAPPER                                                                     \
     svc->_state->_nodes.clear();                                                                   \
-    generate_node_mapper(svc->_state->_nodes, svc->_state->_all_apps, hps)
+    generate_node_mapper(svc->_state->_nodes, svc->_state->_all_apps, nodes)
 
     REGENERATE_NODE_MAPPER;
     // stage are freezed
@@ -550,15 +522,13 @@ void meta_service_test_app::cannot_run_balancer_test()
 
     // all the partitions are not healthy
     svc->_function_level.store(meta_function_level::fl_lively);
-    pc.primary.set_invalid();
-    pc.hp_primary.reset();
+    RESET_IP_AND_HOST_PORT(pc, primary);
     REGENERATE_NODE_MAPPER;
 
     ASSERT_FALSE(svc->_state->check_all_partitions());
 
     // some dropped node still exists in nodes
-    pc.primary = nodes[0].second;
-    pc.__set_hp_primary(nodes[0].first);
+    SET_IP_AND_HOST_PORT_BY_DNS(pc, primary, nodes[0]);
     REGENERATE_NODE_MAPPER;
     get_node_state(svc->_state->_nodes, pc.hp_primary, true)->set_alive(false);
     ASSERT_FALSE(svc->_state->check_all_partitions());

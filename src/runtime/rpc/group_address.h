@@ -120,7 +120,7 @@ inline bool rpc_group_address::add(rpc_address addr)
     CHECK_EQ_MSG(addr.type(), HOST_TYPE_IPV4, "rpc group address member must be ipv4");
 
     alw_t l(_lock);
-    if (_members.end() == std::find(_members.begin(), _members.end(), addr)) {
+    if (!utils::contains(_members, addr)) {
         _members.push_back(addr);
         return true;
     } else {
@@ -140,7 +140,7 @@ inline void rpc_group_address::leader_forward()
 inline void rpc_group_address::set_leader(rpc_address addr)
 {
     alw_t l(_lock);
-    if (addr.is_invalid()) {
+    if (!addr) {
         _leader_index = -1;
         return;
     }
@@ -189,7 +189,7 @@ inline bool rpc_group_address::remove(rpc_address addr)
 inline bool rpc_group_address::contains(rpc_address addr) const
 {
     alr_t l(_lock);
-    return _members.end() != std::find(_members.begin(), _members.end(), addr);
+    return utils::contains(_members, addr);
 }
 
 inline int rpc_group_address::count() const
@@ -205,7 +205,7 @@ inline rpc_address rpc_group_address::next(rpc_address current) const
         return rpc_address::s_invalid_address;
     }
 
-    if (current.is_invalid()) {
+    if (!current) {
         return _members[rand::next_u32(0, (uint32_t)_members.size() - 1)];
     }
 

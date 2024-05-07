@@ -31,11 +31,10 @@
 #include "client/replication_ddl_client.h"
 #include "common/gpid.h"
 #include "dsn.layer2_types.h"
+#include "meta/load_balance_policy.h"
 #include "meta_admin_types.h"
-#include "runtime/rpc/dns_resolver.h"
 #include "runtime/rpc/rpc_host_port.h"
 #include "shell/command_executor.h"
-#include "shell/command_helper.h"
 #include "shell/commands.h"
 #include "utils/error_code.h"
 #include "utils/string_conv.h"
@@ -182,8 +181,9 @@ dsn::host_port diagnose_recommend(const ddd_partition_info &pinfo)
 
     if (last_dropped.size() == 1) {
         const ddd_node_info &ninfo = last_dropped.back();
-        if (ninfo.last_committed_decree >= pinfo.config.last_committed_decree)
+        if (ninfo.last_committed_decree >= pinfo.config.last_committed_decree) {
             return ninfo.hp_node;
+        }
     } else if (last_dropped.size() == 2) {
         const ddd_node_info &secondary = last_dropped.front();
         const ddd_node_info &latest = last_dropped.back();
@@ -193,16 +193,19 @@ dsn::host_port diagnose_recommend(const ddd_partition_info &pinfo)
         //  - if last committed decree is the same, choose node with the largest ballot
 
         if (latest.last_committed_decree == secondary.last_committed_decree &&
-            latest.last_committed_decree >= pinfo.config.last_committed_decree)
+            latest.last_committed_decree >= pinfo.config.last_committed_decree) {
             return latest.ballot >= secondary.ballot ? latest.hp_node : secondary.hp_node;
+        }
 
         if (latest.last_committed_decree > secondary.last_committed_decree &&
-            latest.last_committed_decree >= pinfo.config.last_committed_decree)
+            latest.last_committed_decree >= pinfo.config.last_committed_decree) {
             return latest.hp_node;
+        }
 
         if (secondary.last_committed_decree > latest.last_committed_decree &&
-            secondary.last_committed_decree >= pinfo.config.last_committed_decree)
+            secondary.last_committed_decree >= pinfo.config.last_committed_decree) {
             return secondary.hp_node;
+        }
     }
 
     return dsn::host_port();
@@ -329,8 +332,7 @@ bool ddd_diagnose(command_executor *e, shell_context *sc, arguments args)
             out << "    ----" << std::endl;
 
             auto primary = diagnose_recommend(pinfo);
-            out << "    recommend_primary: "
-                << (primary.is_invalid() ? "none" : primary.to_string());
+            out << "    recommend_primary: " << (!primary ? "none" : primary.to_string());
             if (primary == latest_dropped)
                 out << "  <== the latest";
             else if (primary == secondary_latest_dropped)
@@ -338,7 +340,7 @@ bool ddd_diagnose(command_executor *e, shell_context *sc, arguments args)
             out << std::endl;
 
             bool skip_this = false;
-            if (!primary.is_invalid() && !auto_diagnose && !skip_prompt) {
+            if (primary && !auto_diagnose && !skip_prompt) {
                 do {
                     std::cout << "    > Are you sure to use the recommend primary? [y/n/s(skip)]: ";
                     char c;
@@ -357,7 +359,7 @@ bool ddd_diagnose(command_executor *e, shell_context *sc, arguments args)
                 } while (true);
             }
 
-            if (primary.is_invalid() && !skip_prompt && !skip_this) {
+            if (!primary && !skip_prompt && !skip_this) {
                 do {
                     std::cout << "    > Please input the primary node: ";
                     std::string node;
@@ -371,12 +373,11 @@ bool ddd_diagnose(command_executor *e, shell_context *sc, arguments args)
                 } while (true);
             }
 
-            if (!primary.is_invalid() && !skip_this) {
+            if (primary && !skip_this) {
                 dsn::replication::configuration_balancer_request request;
                 request.gpid = pinfo.config.pid;
-                const auto &primary_hp = dsn::dns_resolver::instance().resolve_address(primary);
-                request.action_list = {new_proposal_action(
-                    primary_hp, primary_hp, primary, primary, config_type::CT_ASSIGN_PRIMARY)};
+                request.action_list = {
+                    new_proposal_action(primary, primary, config_type::CT_ASSIGN_PRIMARY)};
                 request.force = false;
                 dsn::error_code err = sc->ddl_client->send_balancer_proposal(request);
                 out << "    propose_request: propose -g " << request.gpid

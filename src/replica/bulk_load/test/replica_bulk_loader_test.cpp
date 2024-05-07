@@ -220,8 +220,7 @@ public:
         _group_req.meta_bulk_load_status = status;
         _group_req.config.status = partition_status::PS_SECONDARY;
         _group_req.config.ballot = b;
-        _group_req.target = SECONDARY;
-        _group_req.__set_hp_target(SECONDARY_HP);
+        SET_IP_AND_HOST_PORT_BY_DNS(_group_req, target, PRIMARY_HP);
     }
 
     void mock_replica_config(partition_status::type status)
@@ -229,8 +228,7 @@ public:
         replica_configuration rconfig;
         rconfig.ballot = BALLOT;
         rconfig.pid = PID;
-        rconfig.primary = PRIMARY;
-        rconfig.__set_hp_primary(PRIMARY_HP);
+        SET_IP_AND_HOST_PORT_BY_DNS(rconfig, primary, PRIMARY_HP);
         rconfig.status = status;
         _replica->set_replica_config(rconfig);
     }
@@ -242,13 +240,8 @@ public:
         config.max_replica_count = 3;
         config.pid = PID;
         config.ballot = BALLOT;
-        config.primary = PRIMARY;
-        config.secondaries.emplace_back(SECONDARY);
-        config.secondaries.emplace_back(SECONDARY2);
-        config.__set_hp_primary(PRIMARY_HP);
-        config.__set_hp_secondaries({});
-        config.hp_secondaries.emplace_back(SECONDARY_HP);
-        config.hp_secondaries.emplace_back(SECONDARY_HP2);
+        SET_IP_AND_HOST_PORT_BY_DNS(config, primary, PRIMARY_HP);
+        SET_IPS_AND_HOST_PORTS_BY_DNS(config, secondaries, SECONDARY_HP, SECONDARY_HP2);
         _replica->set_primary_partition_configuration(config);
     }
 
@@ -418,9 +411,6 @@ public:
     std::string ROOT_PATH = "bulk_load_root";
     gpid PID = gpid(1, 0);
     ballot BALLOT = 3;
-    rpc_address PRIMARY = rpc_address::from_ip_port("127.0.0.2", 34801);
-    rpc_address SECONDARY = rpc_address::from_ip_port("127.0.0.3", 34801);
-    rpc_address SECONDARY2 = rpc_address::from_ip_port("127.0.0.4", 34801);
     const host_port PRIMARY_HP = host_port("localhost", 34801);
     const host_port SECONDARY_HP = host_port("localhost", 34801);
     const host_port SECONDARY_HP2 = host_port("localhost", 34801);

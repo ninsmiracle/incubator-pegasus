@@ -161,10 +161,7 @@ std::vector<host_port> meta_test_base::ensure_enough_alive_nodes(int min_node_co
         return nodes;
     }
 
-    auto node_pairs = generate_node_list(min_node_count);
-    for (const auto &p : node_pairs) {
-        nodes.emplace_back(p.first);
-    }
+    nodes = generate_node_list(min_node_count);
     _ms->set_node_state(nodes, true);
 
     while (true) {
@@ -202,7 +199,7 @@ void meta_test_base::create_app(const std::string &name, uint32_t partition_coun
 
     auto result = fake_create_app(_ss.get(), req);
     fake_wait_rpc(result, resp);
-    ASSERT_EQ(resp.err, ERR_OK) << resp.err << " " << name;
+    ASSERT_EQ(ERR_OK, resp.err) << name;
 
     // wait for the table to create
     ASSERT_TRUE(_ss->spin_wait_staging(30));

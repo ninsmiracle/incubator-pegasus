@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <algorithm>
 #include <atomic>
 #include <vector>
 
@@ -36,6 +35,7 @@
 #include "replica_stub.h"
 #include "runtime/rpc/rpc_address.h"
 #include "utils/error_code.h"
+#include "utils/utils.h"
 
 namespace dsn {
 namespace replication {
@@ -105,7 +105,7 @@ void primary_context::reset_membership(const partition_configuration &config, bo
 
     membership = config;
 
-    if (membership.hp_primary.is_invalid() == false) {
+    if (membership.hp_primary) {
         statuses[membership.hp_primary] = partition_status::PS_PRIMARY;
     }
 
@@ -124,8 +124,7 @@ void primary_context::get_replica_config(partition_status::type st,
                                          uint64_t learner_signature /*= invalid_signature*/)
 {
     config.pid = membership.pid;
-    config.primary = membership.primary;
-    config.__set_hp_primary(membership.hp_primary);
+    SET_OBJ_IP_AND_HOST_PORT(config, primary, membership, primary);
     config.ballot = membership.ballot;
     config.status = st;
     config.learner_signature = learner_signature;
@@ -137,9 +136,7 @@ bool primary_context::check_exist(const ::dsn::host_port &node, partition_status
     case partition_status::PS_PRIMARY:
         return membership.hp_primary == node;
     case partition_status::PS_SECONDARY:
-        return std::find(membership.hp_secondaries.begin(),
-                         membership.hp_secondaries.end(),
-                         node) != membership.hp_secondaries.end();
+        return utils::contains(membership.hp_secondaries, node);
     case partition_status::PS_POTENTIAL_SECONDARY:
         return learners.find(node) != learners.end();
     default:

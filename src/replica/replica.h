@@ -388,14 +388,14 @@ private:
     /////////////////////////////////////////////////////////////////
     // reconfiguration
     void assign_primary(configuration_update_request &proposal);
-    void add_potential_secondary(configuration_update_request &proposal);
+    void add_potential_secondary(const configuration_update_request &proposal);
     void upgrade_to_secondary_on_primary(const host_port &node);
     void downgrade_to_secondary_on_primary(configuration_update_request &proposal);
     void downgrade_to_inactive_on_primary(configuration_update_request &proposal);
     void remove(configuration_update_request &proposal);
     void update_configuration_on_meta_server(config_type::type type,
                                              const host_port &node,
-                                             partition_configuration &newConfig);
+                                             partition_configuration &new_config);
     void
     on_update_configuration_on_meta_server_reply(error_code err,
                                                  dsn::message_ex *request,
@@ -499,7 +499,7 @@ private:
     void update_throttle_envs(const std::map<std::string, std::string> &envs);
     void update_throttle_env_internal(const std::map<std::string, std::string> &envs,
                                       const std::string &key,
-                                      throttling_controller &cntl);
+                                      utils::throttling_controller &cntl);
 
     // update allowed users for access controller
     void update_ac_allowed_users(const std::map<std::string, std::string> &envs);
@@ -620,10 +620,12 @@ private:
     bool _inactive_is_transient; // upgrade to P/S is allowed only iff true
     bool _is_initializing;       // when initializing, switching to primary need to update ballot
     deny_client _deny_client;    // if deny requests
-    throttling_controller _write_qps_throttling_controller;  // throttling by requests-per-second
-    throttling_controller _write_size_throttling_controller; // throttling by bytes-per-second
-    throttling_controller _read_qps_throttling_controller;
-    throttling_controller _backup_request_qps_throttling_controller;
+    utils::throttling_controller
+        _write_qps_throttling_controller; // throttling by requests-per-second
+    utils::throttling_controller
+        _write_size_throttling_controller; // throttling by bytes-per-second
+    utils::throttling_controller _read_qps_throttling_controller;
+    utils::throttling_controller _backup_request_qps_throttling_controller;
 
     // duplication
     std::shared_ptr<replica_duplicator_manager> _duplication_mgr;

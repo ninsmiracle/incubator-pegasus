@@ -59,7 +59,7 @@ static void check_cure(app_mapper &apps, node_mapper &nodes, ::dsn::partition_co
     meta_service svc;
     partition_guardian guardian(&svc);
     pc_status ps = pc_status::invalid;
-    node_state *ns;
+    node_state *ns = nullptr;
 
     configuration_proposal_action act;
     while (ps != pc_status::healthy) {
@@ -67,28 +67,34 @@ static void check_cure(app_mapper &apps, node_mapper &nodes, ::dsn::partition_co
         if (act.type == config_type::CT_INVALID)
             break;
         switch (act.type) {
-        case config_type::CT_ASSIGN_PRIMARY:
-            CHECK(pc.hp_primary.is_invalid(), "");
+        case config_type::CT_ASSIGN_PRIMARY: {
+            CHECK(!pc.primary, "");
+            CHECK(!pc.hp_primary, "");
+            CHECK(pc.secondaries.empty(), "");
             CHECK(pc.hp_secondaries.empty(), "");
+            CHECK_EQ(act.node, act.target);
             CHECK_EQ(act.hp_node, act.hp_target);
-            CHECK(nodes.find(act.hp_node) != nodes.end(), "");
-
-            CHECK_EQ(nodes[act.hp_node].served_as(pc.pid), partition_status::PS_INACTIVE);
-            nodes[act.hp_node].put_partition(pc.pid, true);
-            pc.primary = act.node;
-            pc.hp_primary = act.hp_node;
+            const auto node = nodes.find(act.hp_node);
+            CHECK(node != nodes.end(), "");
+            ns = &node->second;
+            CHECK_EQ(ns->served_as(pc.pid), partition_status::PS_INACTIVE);
+            ns->put_partition(pc.pid, true);
+            SET_OBJ_IP_AND_HOST_PORT(pc, primary, act, node);
             break;
-
-        case config_type::CT_ADD_SECONDARY:
+        }
+        case config_type::CT_ADD_SECONDARY: {
+            CHECK(!is_member(pc, act.node), "");
             CHECK(!is_member(pc, act.hp_node), "");
+            CHECK_EQ(pc.primary, act.target);
             CHECK_EQ(pc.hp_primary, act.hp_target);
-            CHECK(nodes.find(act.hp_node) != nodes.end(), "");
-            pc.hp_secondaries.push_back(act.hp_node);
-            ns = &nodes[act.hp_node];
+            const auto node = nodes.find(act.hp_node);
+            CHECK(node != nodes.end(), "");
+            ADD_IP_AND_HOST_PORT(pc, secondaries, act.node, act.hp_node);
+            ns = &node->second;
             CHECK_EQ(ns->served_as(pc.pid), partition_status::PS_INACTIVE);
             ns->put_partition(pc.pid, false);
             break;
-
+        }
         default:
             CHECK(false, "");
             break;
@@ -98,34 +104,30 @@ static void check_cure(app_mapper &apps, node_mapper &nodes, ::dsn::partition_co
     // test upgrade to primary
     CHECK_EQ(nodes[pc.hp_primary].served_as(pc.pid), partition_status::PS_PRIMARY);
     nodes[pc.hp_primary].remove_partition(pc.pid, true);
-    pc.primary.set_invalid();
-    pc.hp_primary.reset();
+    RESET_IP_AND_HOST_PORT(pc, primary);
 
     ps = guardian.cure({&apps, &nodes}, pc.pid, act);
     CHECK_EQ(act.type, config_type::CT_UPGRADE_TO_PRIMARY);
-    CHECK(pc.hp_primary.is_invalid(), "");
+    CHECK(!pc.primary, "");
+    CHECK(!pc.hp_primary, "");
+    CHECK_EQ(act.node, act.target);
     CHECK_EQ(act.hp_node, act.hp_target);
+    CHECK(is_secondary(pc, act.node), "");
     CHECK(is_secondary(pc, act.hp_node), "");
-    CHECK(nodes.find(act.hp_node) != nodes.end(), "");
-
-    ns = &nodes[act.hp_node];
-    pc.primary = act.node;
-    pc.__set_hp_primary(act.hp_node);
+    const auto node = nodes.find(act.hp_node);
+    CHECK(node != nodes.end(), "");
+    ns = &node->second;
+    SET_OBJ_IP_AND_HOST_PORT(pc, primary, act, node);
     std::remove(pc.secondaries.begin(), pc.secondaries.end(), pc.primary);
     std::remove(pc.hp_secondaries.begin(), pc.hp_secondaries.end(), pc.hp_primary);
-
     CHECK_EQ(ns->served_as(pc.pid), partition_status::PS_SECONDARY);
     ns->put_partition(pc.pid, true);
 }
 
 void meta_service_test_app::balancer_validator()
 {
-    std::vector<std::pair<dsn::host_port, dsn::rpc_address>> node_pairs;
     std::vector<dsn::host_port> node_list;
-    generate_node_list(node_pairs, 20, 100);
-    for (const auto &p : node_pairs) {
-        node_list.emplace_back(p.first);
-    }
+    generate_node_list(node_list, 20, 100);
 
     app_mapper apps;
     node_mapper nodes;
@@ -165,19 +167,18 @@ void meta_service_test_app::balancer_validator()
 
     std::shared_ptr<app_state> &the_app = apps[1];
     for (::dsn::partition_configuration &pc : the_app->partitions) {
-        CHECK(!pc.hp_primary.is_invalid(), "");
+        CHECK(pc.hp_primary, "");
         CHECK_GE(pc.secondaries.size(), pc.max_replica_count - 1);
     }
 
     // now test the cure
     ::dsn::partition_configuration &pc = the_app->partitions[0];
     nodes[pc.hp_primary].remove_partition(pc.pid, false);
-    for (const auto &hp : pc.hp_secondaries)
+    for (const auto &hp : pc.hp_secondaries) {
         nodes[hp].remove_partition(pc.pid, false);
-    pc.primary.set_invalid();
-    pc.secondaries.clear();
-    pc.hp_primary.reset();
-    pc.hp_secondaries.clear();
+    }
+    RESET_IP_AND_HOST_PORT(pc, primary);
+    CLEAR_IP_AND_HOST_PORT(pc, secondaries);
 
     // cure test
     check_cure(apps, nodes, pc);
@@ -216,10 +217,12 @@ static void load_apps_and_nodes(const char *file, app_mapper &apps, node_mapper 
             int n;
             infile >> n;
             infile >> ip_port;
-            app->partitions[j].hp_primary = host_port::from_string(ip_port);
+            const auto primary = host_port::from_string(ip_port);
+            SET_IP_AND_HOST_PORT_BY_DNS(app->partitions[j], primary, primary);
             for (int k = 1; k < n; ++k) {
                 infile >> ip_port;
-                app->partitions[j].hp_secondaries.push_back(host_port::from_string(ip_port));
+                const auto secondary = host_port::from_string(ip_port);
+                ADD_IP_AND_HOST_PORT_BY_DNS(app->partitions[j], secondaries, secondary);
             }
         }
     }
@@ -242,8 +245,8 @@ void meta_service_test_app::balance_config_file()
         migration_list ml;
 
         // iterate 1000 times
-        for (int i = 0; i < 1000 && lb->balance({&apps, &nodes}, ml); ++i) {
-            LOG_DEBUG("the {}th round of balancer", i);
+        for (int j = 0; j < 1000 && lb->balance({&apps, &nodes}, ml); ++j) {
+            LOG_DEBUG("the {}th round of balancer", j);
             migration_check_and_apply(apps, nodes, ml, nullptr);
             lb->check({&apps, &nodes}, ml);
             LOG_DEBUG("balance checker operation count = {}", ml.size());

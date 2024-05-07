@@ -29,6 +29,7 @@
 
 #include "failure_detector/failure_detector_multimaster.h"
 #include "fd_types.h"
+#include "runtime/rpc/dns_resolver.h" // IWYU pragma: keep
 #include "runtime/rpc/rpc_host_port.h"
 #include "utils/error_code.h"
 #include "utils/rand.h"
@@ -72,17 +73,14 @@ void slave_failure_detector_with_multimaster::end_ping(::dsn::error_code err,
     GET_HOST_PORT(ack, this_node, hp_this_node);
     GET_HOST_PORT(ack, primary_node, hp_primary_node);
 
-    LOG_INFO(
-        "end ping result, error[{}], time[{}], ack.this_node[{}({})], ack.primary_node[{}({})], "
-        "ack.is_master[{}], ack.allowed[{}]",
-        err,
-        ack.time,
-        hp_this_node,
-        ack.this_node,
-        hp_primary_node,
-        ack.primary_node,
-        ack.is_master ? "true" : "false",
-        ack.allowed ? "true" : "false");
+    LOG_INFO("end ping result, error[{}], time[{}], ack.this_node[{}], ack.primary_node[{}], "
+             "ack.is_master[{}], ack.allowed[{}]",
+             err,
+             ack.time,
+             FMT_HOST_PORT_AND_IP(ack, this_node),
+             FMT_HOST_PORT_AND_IP(ack, primary_node),
+             ack.is_master ? "true" : "false",
+             ack.allowed ? "true" : "false");
 
     zauto_lock l(failure_detector::_lock);
     if (!failure_detector::end_ping_internal(err, ack))
@@ -100,7 +98,7 @@ void slave_failure_detector_with_multimaster::end_ping(::dsn::error_code err,
     } else {
         if (ack.is_master) {
             // do nothing
-        } else if (hp_primary_node.is_invalid()) {
+        } else if (!hp_primary_node) {
             auto next = _meta_servers.group_host_port()->next(hp_this_node);
             if (next != hp_this_node) {
                 _meta_servers.group_host_port()->set_leader(next);
