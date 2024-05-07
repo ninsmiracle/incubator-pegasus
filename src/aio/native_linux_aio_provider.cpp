@@ -38,10 +38,9 @@
 #include "utils/latency_tracer.h"
 #include "utils/ports.h"
 
-namespace dsn {
-
 DSN_DECLARE_bool(enable_direct_io);
 
+namespace dsn {
 native_linux_aio_provider::native_linux_aio_provider(disk_engine *disk) : aio_provider(disk) {}
 
 native_linux_aio_provider::~native_linux_aio_provider() {}
@@ -73,15 +72,16 @@ native_linux_aio_provider::open_write_file(const std::string &fname)
     if (s.IsNotFound()) {
         std::unique_ptr<rocksdb::WritableFile> cfile;
         //use direct io or not
+        rocksdb::EnvOptions env_options;
         if(FLAGS_enable_direct_io){
-            rocksdb::EnvOptions().use_direct_writes = true;
+            env_options.use_direct_writes = true;
             LOG_DEBUG("file {} open write file WITH direct_io writes method",fname);
         }else{
             LOG_DEBUG("file {} open write file WITHOUT direct_io writes method",fname);
         }
 
         s = dsn::utils::PegasusEnv(dsn::utils::FileDataType::kSensitive)
-                ->ReopenWritableFile(fname, &cfile, rocksdb::EnvOptions());
+                ->ReopenWritableFile(fname, &cfile, env_options);
         if (!s.ok()) {
             LOG_ERROR("failed to create file '{}', err = {}", fname, s.ToString());
             return nullptr;
